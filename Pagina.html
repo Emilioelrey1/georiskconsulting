@@ -1,0 +1,1156 @@
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GeoRISK Consulting | Riesgo, datos y operación</title>
+
+  <style>
+    :root{
+      --bg:#ffffff;
+      --text:#0b1320;
+      --muted:#64748b;
+      --line:rgba(15,23,42,.14);
+
+      --panel:#f6f8fc;
+      --chipBg:rgba(2,8,23,.02);
+
+      --dark:#0b0f16;
+      --dark2:#0f1623;
+
+      --accent:rgba(37,99,235,.18);
+      --accent2:rgba(37,99,235,.40);
+
+      --ctaLight:#f1f1f1;
+      --ctaDark:#8f8f8f;
+
+      --radius:18px;
+      --radius2:999px;
+
+      --shadow:0 14px 34px rgba(2,8,23,.10);
+      --shadow2:0 10px 24px rgba(2,8,23,.06);
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+
+      --max:1120px;
+
+      /* Se actualiza por JS según altura real del header */
+      --headerH:72px;
+      --focus: rgba(37,99,235,.55);
+    }
+
+    *{ box-sizing:border-box; }
+    html{ scroll-behavior:smooth; }
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background:var(--bg);
+      color:var(--text);
+      line-height:1.55;
+    }
+
+    a{ color:inherit; text-decoration:none; }
+    img{ max-width:100%; display:block; }
+
+    :focus-visible{
+      outline:3px solid var(--focus);
+      outline-offset:3px;
+      border-radius:12px;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      html{ scroll-behavior:auto; }
+      *{ transition:none !important; animation:none !important; }
+    }
+
+    .wrap{ max-width:var(--max); margin:0 auto; padding:0 18px; }
+
+    /* =========================================================
+       Header / Nav institucional
+       ========================================================= */
+    .skip{
+      position:absolute;
+      left:-999px;
+      top:10px;
+      background:#fff;
+      border:1px solid var(--line);
+      box-shadow:var(--shadow2);
+      border-radius:12px;
+      padding:10px 12px;
+      z-index:9999;
+    }
+    .skip:focus{ left:18px; }
+
+    header.site-header{
+      position:sticky;
+      top:0;
+      z-index:80;
+      background:rgba(255,255,255,.86);
+      backdrop-filter: blur(12px);
+      border-bottom:1px solid var(--line);
+    }
+
+    .header-inner{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:14px 0;
+    }
+
+    .brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:900;
+  letter-spacing:.2px;
+  white-space:nowrap;
+  cursor:pointer;
+  font-size:18px; /* <-- AQUI se hace más grande el nombre */
+}
+    .mark{
+      width:38px;height:38px;
+      border-radius:12px;
+      background:linear-gradient(135deg, rgba(37,99,235,.95), rgba(11,58,106,.95));
+      box-shadow: 0 10px 24px rgba(37,99,235,.14);
+      flex:0 0 auto;
+    }
+    .brand small{
+      display:block;
+      margin-top:2px;
+      font-weight:700;
+      color:var(--muted);
+      letter-spacing:0;
+    }
+
+    nav.topnav{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      align-items:center;
+    }
+    nav.topnav a{
+      color:var(--muted);
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid transparent;
+      font-weight:750;
+    }
+    nav.topnav a:hover{
+      color:var(--text);
+      border-color:var(--line);
+      background:rgba(2,8,23,.03);
+    }
+
+    /* =========================================================
+       Rail / Índice (Palantir-like): chips + fades + botón índice
+       ========================================================= */
+    .rail{
+      position:sticky;
+      top:var(--headerH);
+      z-index:70;
+      background:#fff;
+      border-bottom:1px solid var(--line);
+    }
+
+    .rail-inner{
+      position:relative;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:12px 0;
+    }
+
+    .chip-scroll{
+      flex:1 1 auto;
+      min-width:0;
+      overflow:auto hidden;
+      scrollbar-width: thin;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      padding:2px 0;
+    }
+
+    .chip-row{
+      display:flex;
+      gap:10px;
+      padding:2px 2px;
+      width:max-content;
+    }
+
+    .chip{
+      scroll-snap-align:start;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius: var(--radius2);
+      border:1px solid var(--line);
+      background: var(--chipBg);
+      color: var(--muted);
+      font-weight:850;
+      font-size:13px;
+      white-space:nowrap;
+      user-select:none;
+      transition: background .12s ease, border-color .12s ease, color .12s ease;
+    }
+    .chip:hover{
+      background: var(--accent);
+      border-color: var(--accent2);
+      color: var(--text);
+    }
+    .chip.active{
+      background: var(--accent);
+      border-color: var(--accent2);
+      color: var(--text);
+    }
+
+    .rail-cta{
+      flex:0 0 auto;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px 12px;
+      border-radius: 12px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      font-weight:900;
+      font-size:12.5px;
+      letter-spacing:.2px;
+      cursor:pointer;
+      transition: background .12s ease, transform .06s ease, border-color .12s ease;
+    }
+    .btn:hover{ background: rgba(2,8,23,.02); border-color: rgba(15,23,42,.20); }
+    .btn:active{ transform: translateY(1px); }
+    .btn.ghost{ background: transparent; color: var(--muted); }
+
+    .fade-left, .fade-right{
+      position:absolute;
+      top:0; bottom:0;
+      width:54px;
+      pointer-events:none;
+      z-index:2;
+    }
+    .fade-left{ left:0; background: linear-gradient(90deg, #fff 22%, rgba(255,255,255,0) 100%); }
+    .fade-right{ right:0; background: linear-gradient(270deg, #fff 22%, rgba(255,255,255,0) 100%); }
+
+    /* =========================================================
+       Secciones “corporativas” (no placeholders)
+       ========================================================= */
+    main{ display:block; }
+    section.block{
+      padding:56px 0;
+      border-bottom:1px solid rgba(15,23,42,.06);
+      background:#fff;
+    }
+    .block h2{ margin:0 0 10px 0; font-size:22px; letter-spacing:-.2px; }
+    .block p{ margin:0; color:var(--muted); max-width:92ch; }
+
+    .section-sub{
+      margin:0 0 18px 0;
+      color:var(--muted);
+      max-width:92ch;
+    }
+
+    .card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow2);
+      padding: 18px;
+    }
+
+    .two{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+    @media (max-width: 980px){
+      .two{ grid-template-columns:1fr; }
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      font-weight:900;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(37,99,235,.28);
+      background: rgba(37,99,235,.10);
+      color: #0b3a6a;
+      letter-spacing:.2px;
+    }
+
+    .clean{
+      margin:10px 0 0 0;
+      padding-left:18px;
+      color: var(--muted);
+    }
+    .clean li{ margin:7px 0; }
+
+    .note{
+      border-left: 4px solid rgba(37,99,235,.55);
+      padding: 12px 14px;
+      background: rgba(37,99,235,.06);
+      border-radius: 14px;
+      border:1px solid rgba(37,99,235,.18);
+      color: var(--muted);
+      margin-top: 14px;
+    }
+    .note b{ color: var(--text); }
+
+    .mono{ font-family: var(--mono); }
+
+    /* =========================================================
+       Módulo editorial oscuro (MARCO OPERATIVO + PDF/Share)
+       ========================================================= */
+    .feature{
+      background: linear-gradient(180deg, var(--dark), var(--dark2));
+      color:#fff;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .feature-inner{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:16px;
+      padding:26px 0 28px;
+    }
+    .meta{
+      color: rgba(255,255,255,.70);
+      font-weight:850;
+      font-size:12.5px;
+      letter-spacing:.3px;
+      text-transform:uppercase;
+      margin:0 0 8px 0;
+    }
+    .title{
+      margin:0;
+      font-size:44px;
+      line-height:1.05;
+      letter-spacing:-.6px;
+    }
+    @media (max-width:700px){
+      .feature-inner{ flex-direction:column; align-items:flex-start; }
+      .title{ font-size:34px; }
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex:0 0 auto;
+    }
+    .action{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.04);
+      color:#fff;
+      font-weight:900;
+      font-size:12.5px;
+      letter-spacing:.2px;
+      cursor:pointer;
+      transition: background .12s ease, border-color .12s ease, transform .06s ease;
+    }
+    .action:hover{
+      border-color: rgba(255,255,255,.26);
+      background: rgba(255,255,255,.07);
+    }
+    .action:active{ transform: translateY(1px); }
+    .pill{
+      font-family: var(--mono);
+      font-weight:900;
+      font-size:11px;
+      padding:4px 8px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.22);
+      opacity:.92;
+    }
+
+    /* =========================================================
+       Statement tipo Palantir (legible; blur limitado)
+       ========================================================= */
+    .statement{
+      min-height:72vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0 18px;
+      background:#fff;
+    }
+    .statement-inner{
+      max-width:1100px;
+      text-align:center;
+      will-change: opacity, filter, transform;
+      transition: opacity .18s linear, filter .18s linear, transform .18s linear;
+    }
+    .statement h2{
+      margin:0;
+      font-size: clamp(34px, 5vw, 64px);
+      line-height:1.08;
+      letter-spacing:-.6px;
+      font-weight:600;
+    }
+    .statement .muted{ color:var(--muted); font-weight:500; }
+
+    /* =========================================================
+       CTA doble (Palantir-like)
+       ========================================================= */
+    .cta-block{
+      border-top:1px solid rgba(15,23,42,.08);
+      border-bottom:1px solid rgba(15,23,42,.08);
+      background:#fff;
+    }
+    .cta-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      padding:36px 0;
+    }
+    @media (max-width:900px){ .cta-grid{ grid-template-columns:1fr; } }
+
+    .cta{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:32px;
+      border-radius:18px;
+      font-size:28px;
+      font-weight:600;
+      cursor:pointer;
+      border:1px solid rgba(15,23,42,.10);
+      transition: transform .10s ease, border-color .12s ease;
+      user-select:none;
+    }
+    .cta.light{ background:var(--ctaLight); color:#111; }
+    .cta.dark{ background:var(--ctaDark); color:#fff; }
+    .cta span{ font-size:32px; opacity:.9; }
+    .cta:hover{ border-color: rgba(15,23,42,.18); transform: translateY(-1px); }
+    .cta:active{ transform: translateY(0px); }
+
+    /* =========================================================
+       Footer institucional tipo Palantir (4 columnas + legal)
+       ========================================================= */
+    footer.footer{
+      background:#ffffff;
+      border-top:1px solid rgba(15,23,42,.12);
+      padding:64px 0 40px;
+      font-size:14px;
+    }
+
+    .footer-grid{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:48px;
+    }
+
+    footer.footer h4{
+      margin:0 0 14px 0;
+      font-size:12px;
+      letter-spacing:.6px;
+      color:#6b7280;
+      font-weight:800;
+      text-transform:uppercase;
+    }
+
+    footer.footer ul{
+      list-style:none;
+      padding:0;
+      margin:0;
+    }
+
+    footer.footer li{ margin:8px 0; }
+    footer.footer a{
+      text-decoration:none;
+      color:#0b1320;
+      font-weight:600;
+    }
+    footer.footer a:hover{ text-decoration:underline; }
+
+    .footer-bottom{
+      margin-top:48px;
+      padding-top:24px;
+      border-top:1px solid rgba(15,23,42,.08);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:16px;
+      color:#6b7280;
+      font-size:13px;
+    }
+
+    .footer-locations{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .footer-locations span{ cursor:default; }
+
+    @media(max-width:900px){
+      .footer-grid{ grid-template-columns:1fr 1fr; }
+    }
+    @media(max-width:520px){
+      .footer-grid{ grid-template-columns:1fr; }
+    }
+
+    .footer-highlight{
+      outline: 2px solid rgba(37,99,235,.35);
+      outline-offset: 6px;
+      border-radius: 18px;
+    }
+
+    /* =========================================================
+       Elementos de formulario/links en contacto (sobrio)
+       ========================================================= */
+    .contact-row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:14px;
+      margin-top: 14px;
+    }
+    @media (max-width:980px){ .contact-row{ grid-template-columns:1fr; } }
+
+    .link{
+      color: var(--text);
+      text-decoration: underline;
+      text-decoration-color: rgba(15,23,42,.25);
+      text-underline-offset: 3px;
+    }
+    .link:hover{ text-decoration-color: rgba(37,99,235,.55); }
+  </style>
+</head>
+
+<body>
+  <a class="skip" href="#contenido">Saltar al contenido</a>
+
+  <!-- Header/Nav institucional -->
+  <header class="site-header" aria-label="Encabezado institucional">
+    <div class="wrap header-inner">
+      <a class="brand" aria-label="Marca" href="#contenido">
+  <div>
+    GeoRISK Consulting
+    <small>Riesgo, datos y operación</small>
+  </div>
+</a>
+
+
+      <nav class="topnav" aria-label="Navegación principal">
+        <a href="#servicios">Servicios</a>
+        <a href="#metodo">Método</a>
+        <a href="#entregables">Entregables</a>
+        <a href="#gobernanza">Gobernanza</a>
+        <a href="#precios">Precios</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Subnav/Índice (rail estilo Palantir) -->
+  <section class="rail" aria-label="Índice institucional por secciones">
+    <div class="wrap rail-inner">
+
+      <div class="chip-scroll" aria-label="Secciones (scroll horizontal)">
+        <div class="chip-row" role="list">
+          <a class="chip" role="listitem" href="#servicios">Servicios</a>
+          <a class="chip" role="listitem" href="#metodo">Método</a>
+          <a class="chip" role="listitem" href="#entregables">Entregables</a>
+          <a class="chip" role="listitem" href="#gobernanza">Gobernanza</a>
+          <a class="chip" role="listitem" href="#precios">Precios</a>
+          <a class="chip" role="listitem" href="#contacto">Contacto</a>
+        </div>
+      </div>
+
+      <div class="rail-cta">
+        <button class="btn ghost" type="button" id="btnIndice">Volver al inicio</button>
+      </div>
+    </div>
+  </section>
+
+  <main id="contenido" aria-label="Contenido principal">
+
+    <!-- Inicio -->
+    <section>
+      <div class="wrap">
+        <p class="section-sub">
+          GeoRISK opera como una unidad de análisis aplicada: define alcance, integra insumos,
+          produce entregables y documenta supuestos y limitaciones para uso interno (operación, control, auditoría).
+        </p>
+
+        <div class="two" aria-label="Marco de trabajo">
+          <article class="card">
+            <span class="badge">Definición</span>
+            <p class="section-sub" style="margin-top:10px">
+              Análisis territorial y temporal orientado a decisiones operativas. Enfoque en replicabilidad, trazabilidad y control de alcance.
+            </p>
+            <ul class="clean">
+              <li>Unidad de análisis por zona / ruta / ventana temporal</li>
+              <li>Entregables consistentes para circulación interna</li>
+              <li>Documentación de supuestos y límites</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <span class="badge">Límites operativos</span>
+            <p class="section-sub" style="margin-top:10px">
+              Se entregan insumos técnicos; no se sustituyen funciones internas de seguridad, custodia ni representación legal.
+            </p>
+            <ul class="clean">
+              <li>No vigilancia/custodia</li>
+              <li>No asesoría jurídica</li>
+              <li>Recomendaciones contextualizadas para decisión interna</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="note" role="note">
+          <b>Nota técnica:</b> la navegación superior y el rail están diseñados para lectura tipo “documento institucional”: acceso rápido, estado activo por sección y mapa corporativo al final.
+        </div>
+      </div>
+    </section>
+
+    <!-- Módulo editorial oscuro -->
+    <section class="feature" aria-label="Módulo editorial institucional">
+      <div class="wrap feature-inner">
+        <div>
+          <p class="meta">MARCO OPERATIVO</p>
+          <h2 class="title">Análisis territorial para decisiones operativas y de control</h2>
+        </div>
+
+        <div class="actions" aria-label="Acciones del documento">
+          <!-- Hook: define URL real en data-pdf-url cuando exista -->
+          <button class="action" type="button" id="btnPdf" data-pdf-url="" title="Configura data-pdf-url cuando exista un PDF real">
+            <span class="pill">PDF</span>
+            <span>Documento</span>
+          </button>
+
+          <button class="action" type="button" id="btnShare" title="Compartir enlace">
+            <span class="pill">SHARE</span>
+            <span>Compartir</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Statement central -->
+    <section class="statement" aria-label="Declaración institucional">
+  <div class="statement-inner" id="statementText">
+    <h2 class="statement-lines">
+      <span class="line">GeoRISK traduce exposición territorial y temporal</span>
+      <span class="line"><span class="muted">en criterios operativos replicables</span></span>
+      <span class="line">para organizaciones con responsabilidad institucional.</span>
+    </h2>
+  </div>
+</section>
+    <!-- CTAs tipo Palantir -->
+    <section class="cta-block" aria-label="Acciones institucionales">
+      <div class="wrap cta-grid">
+        <div class="cta light" id="ctaReunion" role="button" tabindex="0" aria-label="Coordinar reunión breve">
+          Coordinar reunión breve <span>→</span>
+        </div>
+        <div class="cta dark" id="ctaExplorar" role="button" tabindex="0" aria-label="Explorar metodología">
+          Explorar metodología <span>→</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Servicios (contenido real, no placeholder) -->
+    <section id="servicios" class="block" aria-label="Servicios">
+      <div class="wrap">
+        <h2>Servicios</h2>
+        <p class="section-sub">
+          Servicios organizados por familias para facilitar contratación y coordinación interna. El enfoque se define por entregables y criterios de aceptación.
+        </p>
+
+        <div class="two" role="list" aria-label="Familias de servicio">
+          <article class="card" role="listitem">
+            <span class="badge">Operación urbana</span>
+            <p class="section-sub" style="margin-top:10px">
+              Lectura por zona/horario para priorizar decisiones operativas en puntos de operación.
+            </p>
+            <ul class="clean">
+              <li>Diagnóstico territorial (zonas críticas y ventanas temporales)</li>
+              <li>Recomendaciones operativas por contexto</li>
+              <li>Informe ejecutivo utilizable por dirección / control</li>
+            </ul>
+          </article>
+
+          <article class="card" role="listitem">
+            <span class="badge">Logística</span>
+            <p class="section-sub" style="margin-top:10px">
+              Priorización de tramos y ventanas de exposición para rutas y puntos de entrega.
+            </p>
+            <ul class="clean">
+              <li>Lectura territorial de rutas y puntos</li>
+              <li>Alternativas operativas (sin promesas abiertas)</li>
+              <li>Síntesis para operación y seguimiento interno</li>
+            </ul>
+          </article>
+
+          <article class="card" role="listitem">
+            <span class="badge">Soporte técnico</span>
+            <p class="section-sub" style="margin-top:10px">
+              Evidencia contextual y lectura territorial para uso interno de áreas legales/seguridad/compliance (sin sustituir al responsable).
+            </p>
+            <ul class="clean">
+              <li>Informe técnico contextual</li>
+              <li>Anexos visuales orientados a comprensión</li>
+              <li>Trazabilidad de insumos y supuestos</li>
+            </ul>
+          </article>
+
+          <article class="card" role="listitem">
+            <span class="badge">Monitoreo</span>
+            <p class="section-sub" style="margin-top:10px">
+              Seguimiento periódico por ventanas temporales definidas, con comparabilidad entre cortes.
+            </p>
+            <ul class="clean">
+              <li>Actualizaciones por ciclo (semanal/mensual según alcance)</li>
+              <li>Indicadores acordados con el cliente</li>
+              <li>Registro de cambios (control interno)</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="note">
+          <b>Contratación:</b> se formaliza por alcance, entregables, tiempos y criterios. Esto reduce ambigüedad para procurement y auditoría interna.
+        </div>
+      </div>
+    </section>
+
+    <!-- Método -->
+    <section id="metodo" class="block" aria-label="Método">
+      <div class="wrap">
+        <h2>Método</h2>
+        <p class="section-sub">
+          Proceso operativo estandarizado. El objetivo es producir documentos utilizables y comparables entre proyectos, sin depender de herramientas del cliente.
+        </p>
+
+        <div class="two" aria-label="Etapas del proceso">
+          <article class="card">
+            <span class="badge">1) Definición de alcance</span>
+            <ul class="clean">
+              <li>Objetivo y preguntas técnicas</li>
+              <li>Unidad de análisis (zona/ruta/caso) y ventana temporal</li>
+              <li>Insumos requeridos y restricciones</li>
+              <li>Entregables + criterios de aceptación</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <span class="badge">2) Integración de insumos</span>
+            <ul class="clean">
+              <li>Validación mínima de consistencia</li>
+              <li>Normalización para comparabilidad</li>
+              <li>Registro de fuentes e insumos (t trazabilidad)</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="two" style="margin-top:14px">
+          <article class="card">
+            <span class="badge">3) Análisis y síntesis ejecutiva</span>
+            <ul class="clean">
+              <li>Patrones por zona/horario</li>
+              <li>Priorización de hallazgos operativos</li>
+              <li>Escenarios de exposición (si aplica)</li>
+              <li>Recomendaciones contextualizadas</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <span class="badge">4) Entrega y control</span>
+            <ul class="clean">
+              <li>Documento ejecutivo + anexos cuando aplica</li>
+              <li>Sección explícita de supuestos y limitaciones</li>
+              <li>Versionado básico de entregables</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="note">
+          <b>Principio operativo:</b> se evita complejidad innecesaria. Se privilegia utilidad, reproducibilidad y control de alcance.
+        </div>
+      </div>
+    </section>
+
+    <!-- Entregables -->
+    <section id="entregables" class="block" aria-label="Entregables">
+      <div class="wrap">
+        <h2>Entregables</h2>
+        <p class="section-sub">
+          Formatos estandarizados para lectura ejecutiva y archivo interno. Los entregables finales dependen del alcance formalizado.
+        </p>
+
+        <div class="two" aria-label="Formatos y compatibilidad">
+          <article class="card">
+            <span class="badge">Paquete ejecutivo</span>
+            <ul class="clean">
+              <li>Informe ejecutivo (PDF) con hallazgos y recomendaciones</li>
+              <li>Anexo metodológico (cuando aplica) para trazabilidad</li>
+              <li>Visuales de apoyo (mapas/series/diagramas)</li>
+              <li>Lista de supuestos, limitaciones y alcance</li>
+            </ul>
+            <div class="note">
+              <b>Control documental:</b> se distingue qué es insumo, qué es resultado y qué es interpretación.
+            </div>
+          </article>
+
+          <article class="card">
+            <span class="badge">Compatibilidad interna</span>
+            <ul class="clean">
+              <li>Lenguaje técnico e impersonal (lectura institucional)</li>
+              <li>Estructura consistente: objetivo → método → hallazgos → recomendaciones</li>
+              <li>Listo para circulación en operación/compliance/auditoría</li>
+              <li>Evita dependencias externas y “plataformas” no verificables</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Gobernanza -->
+    <section id="gobernanza" class="block" aria-label="Gobernanza">
+      <div class="wrap">
+        <h2>Gobernanza</h2>
+        <p class="section-sub">
+          Apartado institucional para clientes corporativos: define manejo de información, trazabilidad y límites del servicio. No se declaran certificaciones ni clientes sin evidencia verificable.
+        </p>
+
+        <div class="two" aria-label="Políticas operativas">
+          <article class="card">
+            <span class="badge">Confidencialidad</span>
+            <ul class="clean">
+              <li>Minimización: se solicita solo lo necesario para el entregable</li>
+              <li>Separación por proyecto: insumos y resultados aislados por alcance</li>
+              <li>Canales de intercambio acordados con el cliente</li>
+              <li>NDA bajo requerimiento del cliente</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <span class="badge">Trazabilidad</span>
+            <ul class="clean">
+              <li>Registro de fuentes e insumos (públicos o provistos por el cliente con autorización)</li>
+              <li>Supuestos y criterios explícitos</li>
+              <li>Limitaciones documentadas en el entregable</li>
+              <li>Control básico de versiones</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="note">
+          <b>Límites:</b> GeoRISK no presta servicios de seguridad privada/custodia ni asesoría jurídica. El análisis se entrega como insumo técnico para decisión interna.
+        </div>
+      </div>
+    </section>
+
+    <!-- Precios -->
+    <section id="precios" class="block" aria-label="Precios">
+      <div class="wrap">
+        <h2>Precios</h2>
+        <p class="section-sub">
+          Rangos orientativos. Se cotiza por alcance y entregable, no por horas. El precio final se formaliza en propuesta por proyecto.
+        </p>
+
+        <div class="two" aria-label="Rangos orientativos">
+          <article class="card">
+            <span class="badge">Nivel 1</span>
+            <p class="section-sub" style="margin-top:10px"><b>Ficha ejecutiva</b> (1 página). Lectura preliminar del entorno y riesgos prioritarios.</p>
+            <p class="mono" style="margin:0; color:var(--text)"><b>$500 – $1,500 MXN</b></p>
+          </article>
+
+          <article class="card">
+            <span class="badge">Nivel 2</span>
+            <p class="section-sub" style="margin-top:10px"><b>Diagnóstico básico</b>. Análisis territorial base + 1–2 visuales y síntesis operativa.</p>
+            <p class="mono" style="margin:0; color:var(--text)"><b>$5,000 – $8,000 MXN</b></p>
+          </article>
+
+          <article class="card">
+            <span class="badge">Nivel 3</span>
+            <p class="section-sub" style="margin-top:10px"><b>Diagnóstico integral</b>. Lectura espacial/temporal detallada + anexos cuando aplique.</p>
+            <p class="mono" style="margin:0; color:var(--text)"><b>$15,000 – $25,000 MXN</b></p>
+          </article>
+
+          <article class="card">
+            <span class="badge">Soporte técnico</span>
+            <p class="section-sub" style="margin-top:10px"><b>Informe técnico contextual</b> por caso/expediente (sin asesoría jurídica).</p>
+            <p class="mono" style="margin:0; color:var(--text)"><b>$8,000 – $30,000 MXN</b></p>
+          </article>
+        </div>
+
+        <div class="note">
+          <b>Transparencia:</b> rangos sujetos a volumen, ventana temporal y disponibilidad de insumos. Se define por escrito el alcance y los criterios de aceptación.
+        </div>
+      </div>
+    </section>
+
+    <!-- Contacto -->
+    <section id="contacto" class="block" aria-label="Contacto">
+      <div class="wrap">
+        <h2>Contacto</h2>
+        <p class="section-sub">
+          Para coordinar una reunión breve, utilice los siguientes canales. Se recomienda no compartir información sensible en el primer contacto.
+        </p>
+
+        <div class="contact-row" aria-label="Canales de contacto">
+          <article class="card">
+            <span class="badge">Canal principal</span>
+            <p class="section-sub" style="margin-top:10px">
+              Correo: <a class="link mono" href="mailto:georisk.consulting@gmail.com">georisk.consulting@gmail.com</a>
+            </p>
+            <ul class="clean">
+              <li>Modalidad: por proyecto (alcance + entregables)</li>
+              <li>NDA: bajo requerimiento del cliente</li>
+              <li>Intercambio de insumos: canal acordado con el cliente</li>
+            </ul>
+            <div class="note">
+              <b>Operativo:</b> al disponer de dominio corporativo, migrar a <span class="mono">contacto@tudominio.com</span>.
+            </div>
+          </article>
+
+          <article class="card">
+            <span class="badge">Solicitud rápida</span>
+            <div class="note mono" style="white-space:pre-wrap">
+Asunto: Reunión breve / Alcance de proyecto – GeoRISK Consulting
+
+Buen día. Solicito coordinar una reunión de 15 minutos para revisar un posible alcance de trabajo (análisis territorial de riesgo y soporte técnico contextual).
+Agradezco compartir disponibilidad (día y hora) y el contexto general (zona/ruta/caso) sin incluir información sensible en este primer contacto.
+            </div>
+
+            <p style="margin:14px 0 0 0; color:var(--muted)">
+              <a class="link" href="mailto:georisk.consulting@gmail.com?subject=Reuni%C3%B3n%20breve%20%2F%20Alcance%20de%20proyecto%20%E2%80%93%20GeoRISK%20Consulting&body=Buen%20d%C3%ADa.%20Solicito%20coordinar%20una%20reuni%C3%B3n%20de%2015%20minutos%20para%20revisar%20un%20posible%20alcance%20de%20trabajo%20(an%C3%A1lisis%20territorial%20de%20riesgo%20y%20soporte%20t%C3%A9cnico%20contextual).%0A%0AAgradezco%20compartir%20disponibilidad%20(d%C3%ADa%20y%20hora)%20y%20el%20contexto%20general%20(zona%2Fruta%2Fcaso)%20sin%20incluir%20informaci%C3%B3n%20sensible%20en%20este%20primer%20contacto.">
+                Abrir correo con plantilla
+              </a>
+            </p>
+
+            <div class="note">
+              <b>Disclaimer:</b> GeoRISK no presta servicios de seguridad privada/custodia ni asesoría jurídica.
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer institucional (ÍNDICE COMPLETO) -->
+    <footer class="footer" id="indice" aria-label="Índice corporativo y pie institucional">
+      <div class="wrap">
+        <div class="footer-grid" role="navigation" aria-label="Mapa del sitio">
+          <div>
+            <h4>Áreas de trabajo</h4>
+            <ul>
+              <li><a href="#servicios">Análisis territorial</a></li>
+              <li><a href="#servicios">Riesgo operativo</a></li>
+              <li><a href="#gobernanza">Seguridad institucional</a></li>
+              <li><a href="#metodo">Inteligencia aplicada</a></li>
+              <li><a href="#metodo">Planeación estratégica</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4>Casos de aplicación</h4>
+            <ul>
+              <li><a href="#servicios">Gobierno</a></li>
+              <li><a href="#servicios">Infraestructura crítica</a></li>
+              <li><a href="#servicios">Energía</a></li>
+              <li><a href="#servicios">Servicios financieros</a></li>
+              <li><a href="#servicios">Entornos urbanos</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4>Capacidades</h4>
+            <ul>
+              <li><a href="#metodo">Modelos predictivos</a></li>
+              <li><a href="#metodo">Integración de datos</a></li>
+              <li><a href="#metodo">Análisis geoespacial</a></li>
+              <li><a href="#metodo">Evaluación de escenarios</a></li>
+              <li><a href="#metodo">Monitoreo continuo</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4>Documentación</h4>
+            <ul>
+              <li><a href="#metodo">Metodología</a></li>
+              <li><a href="#gobernanza">Gobernanza de datos</a></li>
+              <li><a href="#gobernanza">Ética y responsabilidad</a></li>
+              <li><a href="#contacto">Aviso de privacidad</a></li>
+              <li><a href="#contacto">Términos de uso</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-bottom" aria-label="Legal">
+          <div>
+            © <span id="year"></span> GeoRISK Consulting. Todos los derechos reservados.
+          </div>
+          <div class="footer-locations" aria-label="Regiones">
+            <span>MX</span><span>LATAM</span><span>US</span><span>EU</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // Año automático (señal simple de mantenimiento)
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Medir altura real del header para posicionar rail sin solaparse.
+    const header = document.querySelector('header.site-header');
+    function syncHeaderH(){
+      const h = header ? header.offsetHeight : 72;
+      document.documentElement.style.setProperty('--headerH', h + 'px');
+    }
+    window.addEventListener('resize', syncHeaderH);
+    syncHeaderH();
+
+    // 1) Rail: resaltar chip activo según sección visible
+    const chipLinks = Array.from(document.querySelectorAll('.chip-row .chip'));
+    const sectionIds = chipLinks.map(a => (a.getAttribute('href') || '').replace('#','')).filter(Boolean);
+    const sections = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
+
+    if (sections.length){
+      const obs = new IntersectionObserver((entries)=>{
+        entries.forEach(e=>{
+          if(e.isIntersecting){
+            chipLinks.forEach(c=>c.classList.remove('active'));
+            const active = document.querySelector(`.chip[href="#${e.target.id}"]`);
+            if(active) active.classList.add('active');
+          }
+        });
+      }, { threshold: 0.55 });
+
+      sections.forEach(s => obs.observe(s));
+    }
+
+   // 2) Statement: difuminado línea por línea (secuencial)
+// 2) Statement: difuminado línea por línea (secuencial) — medimos el CONTENEDOR grande
+const statementInner = document.getElementById('statementText');
+const statementSection = statementInner ? statementInner.closest('.statement') : null;
+const statementLines = statementInner ? Array.from(statementInner.querySelectorAll('.line')) : [];
+let ticking = false;
+
+function clamp01(x){ return Math.min(Math.max(x, 0), 1); }
+
+function updateStatement(){
+  if(!statementSection || !statementLines.length) return;
+
+  const rect = statementSection.getBoundingClientRect();
+  const vh = window.innerHeight;
+
+  // 0..1: avanza lentamente mientras recorres el bloque (porque el bloque mide ~72vh)
+  let progress = (vh - rect.top) / (vh + rect.height);
+  progress = clamp01(progress);
+
+  // Hold para lectura (no difumina al entrar)
+  const HOLD = 0.22; // súbelo a 0.30 si lo quieres más lento
+  const t = clamp01((progress - HOLD) / (1 - HOLD));
+
+  const n = statementLines.length;
+
+  statementLines.forEach((line, i) => {
+    // Secuencial: cada línea empieza después
+    const start = i / n;
+    const end = (i + 1) / n;
+    const local = (t - start) / (end - start);
+    const p = clamp01(local);
+
+    const opacity = Math.max(0.65, 1 - p * 0.35);
+    const blur = Math.min(1.4, p * 1.4);
+    const translate = Math.min(6, p * 6);
+
+    line.style.opacity = opacity.toFixed(3);
+    line.style.filter = `blur(${blur.toFixed(2)}px)`;
+    line.style.transform = `translateY(${translate.toFixed(1)}px)`;
+  });
+}
+
+function onScroll(){
+  if(ticking) return;
+  ticking = true;
+  requestAnimationFrame(()=>{
+    updateStatement();
+    ticking = false;
+  });
+}
+
+window.addEventListener('scroll', onScroll, { passive:true });
+window.addEventListener('resize', ()=>{ syncHeaderH(); updateStatement(); });
+updateStatement();
+
+
+    // 3) Share: navigator.share + fallback clipboard
+    const btnShare = document.getElementById('btnShare');
+    if (btnShare){
+      btnShare.addEventListener('click', async ()=>{
+        const url = location.href;
+        try{
+          if(navigator.share){
+            await navigator.share({ title: document.title, url });
+          }else{
+            await navigator.clipboard.writeText(url);
+            alert('Enlace copiado al portapapeles.');
+          }
+        }catch(e){ /* silencioso */ }
+      });
+    }
+
+    // PDF hook: no inventa URL; si existe data-pdf-url se abre.
+    const btnPdf = document.getElementById('btnPdf');
+    if (btnPdf){
+      btnPdf.addEventListener('click', ()=>{
+        const url = btnPdf.getAttribute('data-pdf-url') || '';
+        if(url.trim()){
+          window.open(url, '_blank', 'noopener,noreferrer');
+        }else{
+          alert('Configura data-pdf-url con la ruta real del PDF cuando exista.');
+        }
+      });
+    }
+
+    // 4) Botón "VOLVER AL INICIO" => scroll al tope (inicio del documento)
+const btnIndice = document.getElementById('btnIndice');
+
+if(btnIndice){
+  btnIndice.addEventListener('click', ()=>{
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
+
+
+    // CTAs: sin inventar destinos
+    function bindButtonLike(el, fn){
+      if(!el) return;
+      el.addEventListener('click', fn);
+      el.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter' || e.key === ' '){
+          e.preventDefault();
+          fn();
+        }
+      });
+    }
+
+    bindButtonLike(document.getElementById('ctaReunion'), ()=>{ location.hash = '#contacto'; });
+    bindButtonLike(document.getElementById('ctaExplorar'), ()=>{ location.hash = '#metodo'; });
+  </script>
+</body>
+</html>
