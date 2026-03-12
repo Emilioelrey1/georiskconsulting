@@ -539,6 +539,88 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .rdoc-footer{border-top:1px solid var(--border);padding-top:12px;font-size:9px;color:var(--muted);display:flex;justify-content:space-between;}
 
 /* ═══════════════════════════════════════════════════════
+   COMMUNITY REPORTS — 3 niveles de participación
+═══════════════════════════════════════════════════════ */
+.report-fab{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);z-index:600;pointer-events:auto;display:flex;align-items:center;gap:8px;padding:10px 20px;background:rgba(8,13,26,.92);backdrop-filter:blur(14px);border:1px solid rgba(0,230,118,.4);border-radius:24px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--green);cursor:pointer;box-shadow:0 4px 24px rgba(0,0,0,.5),0 0 20px rgba(0,230,118,.08);transition:all .2s;}
+.report-fab:hover{background:rgba(0,230,118,.1);border-color:var(--green);box-shadow:0 4px 32px rgba(0,0,0,.6),0 0 30px rgba(0,230,118,.15);transform:translateX(-50%) translateY(-2px);}
+.report-fab .rfab-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 2s infinite;}
+.report-fab .rfab-count{background:rgba(0,230,118,.2);border-radius:10px;padding:1px 7px;font-size:9px;}
+.rep-modal-overlay{position:fixed;inset:0;z-index:9600;background:rgba(4,7,15,.88);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s ease;}
+.rep-modal-overlay.open{opacity:1;pointer-events:auto;}
+.rep-modal{background:var(--panel);border:1px solid var(--border2);width:460px;max-width:94vw;max-height:90vh;overflow-y:auto;transform:translateY(10px) scale(.97);transition:transform .22s ease;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.rep-modal-overlay.open .rep-modal{transform:translateY(0) scale(1);}
+.rmod-head{padding:16px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;position:sticky;top:0;background:var(--panel);z-index:2;}
+.rmod-title{font-family:var(--cond);font-size:17px;font-weight:700;letter-spacing:.04em;color:#fff;}
+.rmod-sub{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.06em;margin-top:3px;}
+.rmod-close{background:none;border:1px solid var(--border);border-radius:2px;padding:3px 9px;font-family:var(--mono);font-size:10px;color:var(--muted);cursor:pointer;flex-shrink:0;transition:color .1s,border-color .1s;}
+.rmod-close:hover{color:var(--text);border-color:var(--border2);}
+.rmod-body{padding:18px 20px;}
+.loc-selector{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color .12s,background .12s;}
+.loc-selector:hover{border-color:rgba(0,230,118,.3);background:rgba(0,230,118,.03);}
+.loc-selector.has-loc{border-color:rgba(0,230,118,.4);}
+.loc-selector .ls-ico{font-size:18px;flex-shrink:0;}
+.loc-selector .ls-text{flex:1;font-family:var(--mono);font-size:10px;}
+.loc-selector .ls-main{color:var(--text);}
+.loc-selector .ls-sub{color:var(--muted);font-size:9px;margin-top:2px;}
+.loc-selector .ls-btn{font-family:var(--mono);font-size:9px;color:var(--green);letter-spacing:.04em;flex-shrink:0;}
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;}
+.type-cell{border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:border-color .12s,background .12s;}
+.type-cell:hover{border-color:var(--border2);background:rgba(255,255,255,.02);}
+.type-cell.sel{border-color:var(--tc-color,var(--green));background:rgba(0,0,0,.08);}
+.type-cell .tc-ico{font-size:16px;flex-shrink:0;}
+.type-cell .tc-name{font-family:var(--mono);font-size:10px;color:var(--text);}
+.type-cell .tc-desc{font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:1px;}
+.sev-wrap{margin-bottom:14px;}
+.sev-label-row{display:flex;justify-content:space-between;margin-bottom:8px;}
+.sev-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.sev-val{font-family:var(--mono);font-size:11px;font-weight:600;}
+.sev-slider{width:100%;height:4px;border-radius:2px;cursor:pointer;appearance:none;-webkit-appearance:none;background:linear-gradient(90deg,var(--green) 0%,var(--amber) 50%,var(--red) 100%);outline:none;}
+.sev-slider::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--text);border:2px solid var(--panel);box-shadow:0 0 6px rgba(0,0,0,.5);cursor:pointer;}
+.sev-ticks{display:flex;justify-content:space-between;margin-top:4px;}
+.sev-tick{font-family:var(--mono);font-size:8px;color:var(--muted);}
+.rep-textarea{width:100%;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;color:var(--text);font-family:var(--mono);font-size:11px;outline:none;resize:none;height:72px;transition:border-color .12s;margin-bottom:10px;}
+.rep-textarea:focus{border-color:rgba(0,230,118,.35);}
+.rep-textarea::placeholder{color:var(--ghost);}
+.privacy-note{background:rgba(41,182,246,.06);border:1px solid rgba(41,182,246,.2);border-radius:var(--r);padding:8px 12px;margin-bottom:14px;font-family:var(--mono);font-size:9px;color:var(--muted);line-height:1.8;display:flex;gap:8px;align-items:flex-start;}
+.privacy-note .pn-ico{font-size:13px;flex-shrink:0;margin-top:1px;}
+.rep-submit{width:100%;padding:12px;background:var(--green);border:none;border-radius:var(--r);color:var(--black);font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s,transform .08s;}
+.rep-submit:hover{background:#2fffa0;}
+.rep-submit:active{transform:scale(.99);}
+.rep-submit:disabled{opacity:.5;pointer-events:none;}
+.rate-warn{display:none;padding:8px 12px;margin-top:8px;background:var(--amber-dim);border:1px solid rgba(255,171,0,.3);border-radius:var(--r);font-family:var(--mono);font-size:9px;color:var(--amber);text-align:center;line-height:1.7;}
+.rate-warn.show{display:block;}
+.cr-pin-unverified{width:28px;height:28px;border-radius:50%;background:rgba(255,171,0,.15);border:2px solid var(--amber);display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 0 10px rgba(255,171,0,.4);animation:cr-pulse 3s ease-in-out infinite;cursor:pointer;}
+.cr-pin-confirmed{width:28px;height:28px;border-radius:50%;background:rgba(255,61,61,.2);border:2px solid var(--red);display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 0 12px rgba(255,61,61,.5);cursor:pointer;}
+.cr-pin-safe{width:28px;height:28px;border-radius:50%;background:rgba(0,230,118,.15);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 0 10px rgba(0,230,118,.4);cursor:pointer;}
+@keyframes cr-pulse{0%,100%{box-shadow:0 0 10px rgba(255,171,0,.4);transform:scale(1);}50%{box-shadow:0 0 18px rgba(255,171,0,.7);transform:scale(1.06);}}
+.community-feed{padding:0 12px 8px;}
+.cf-item{border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;margin-bottom:5px;cursor:pointer;transition:border-color .12s,background .12s;position:relative;overflow:hidden;}
+.cf-item:hover{border-color:var(--border2);background:rgba(255,255,255,.02);}
+.cf-item::before{content:'';position:absolute;top:0;left:0;bottom:0;width:3px;}
+.cf-item.cf-unverified::before{background:var(--amber);}
+.cf-item.cf-confirmed::before{background:var(--red);}
+.cf-item.cf-safe::before{background:var(--green);}
+.cf-top{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
+.cf-ico{font-size:12px;}
+.cf-name{font-family:var(--cond);font-size:12px;font-weight:600;flex:1;}
+.cf-time{font-family:var(--mono);font-size:8px;color:var(--muted);}
+.cf-desc{font-family:var(--mono);font-size:9px;color:var(--muted);line-height:1.5;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cf-footer{display:flex;align-items:center;gap:6px;}
+.cf-votes{font-family:var(--mono);font-size:8px;color:var(--muted);display:flex;align-items:center;gap:3px;}
+.cf-vote-up{color:var(--green);}
+.cf-vote-down{color:var(--red);}
+.cf-status-badge{font-family:var(--mono);font-size:7px;letter-spacing:.04em;padding:1px 5px;border-radius:2px;margin-left:auto;}
+.hybrid-score-bar{display:flex;gap:2px;height:6px;border-radius:3px;overflow:hidden;margin-bottom:3px;}
+.hsb-ml{background:var(--blue);}
+.hsb-com{background:var(--amber);}
+.hybrid-score-legend{display:flex;gap:12px;font-family:var(--mono);font-size:8px;color:var(--muted);margin-bottom:10px;}
+.hsl-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:3px;}
+.cr-counter-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px;color:var(--amber);background:rgba(255,171,0,.1);border:1px solid rgba(255,171,0,.25);border-radius:10px;padding:2px 8px;letter-spacing:.04em;}
+.cr-counter-badge .crb-dot{width:5px;height:5px;border-radius:50%;background:var(--amber);animation:blink 2s infinite;}
+.decay-bar-wrap{height:2px;background:var(--border);border-radius:1px;margin-top:6px;overflow:hidden;}
+.decay-bar{height:100%;background:var(--amber);border-radius:1px;transition:width 1s linear;}
+
+/* ═══════════════════════════════════════════════════════
    URBAN LAYERS — two-group panel system
 ═══════════════════════════════════════════════════════ */
 
@@ -1190,6 +1272,13 @@ body.ai-disabled .screens { top:calc(var(--nav-h) + 28px); }
             <div class="lr-name">Sensores C5</div><div class="lr-count">89</div><div class="lr-sw"></div>
           </div>
 
+          <!-- Community reports layer -->
+          <div class="layer-row ctx-layer" data-layer="community" data-group="ctx" onclick="togMapLayer(this)" id="communityLayerRow">
+            <div class="lr-icon">👥</div>
+            <div class="lr-swatch" style="background:var(--amber)"></div>
+            <div class="lr-name">Reportes Ciudadanos</div><div class="lr-count" id="communityLayerCount">0</div><div class="lr-sw"></div>
+          </div>
+
         </div>
 
         <!-- ── Layer info panel ── -->
@@ -1212,7 +1301,40 @@ body.ai-disabled .screens { top:calc(var(--nav-h) + 28px); }
             <span style="color:#ffeb3b">■</span> Iluminación → déficit lumínico<br>
             <span style="color:var(--green)">■</span> Puntos Seguros → gasolineras, hospitales<br>
             <span style="color:var(--blue)">■</span> Transporte → metro, camión, CETRAM<br>
-            <span style="color:var(--violet)">■</span> Sensores C5 → cámaras y IoT
+            <span style="color:var(--violet)">■</span> Sensores C5 → cámaras y IoT<br>
+            <span style="color:var(--amber)">■</span> Reportes Ciudadanos → comunidad
+          </div>
+        </div>
+
+        <!-- ── SCORE HÍBRIDO (Level 3) ── -->
+        <div class="mside-section" id="hybridScoreSection" style="display:none">
+          <div class="mside-lbl">SCORE HÍBRIDO DE ZONA</div>
+          <div style="padding:4px 0 2px">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:5px">CDMX · Zona activa</div>
+            <div class="hybrid-score-bar">
+              <div class="hsb-ml" id="hsbMl" style="width:70%"></div>
+              <div class="hsb-com" id="hsbCom" style="width:30%"></div>
+            </div>
+            <div class="hybrid-score-legend">
+              <span><span class="hsl-dot" style="background:var(--blue)"></span>ML histórico <span id="hsbMlPct" style="color:var(--text)">70%</span></span>
+              <span><span class="hsl-dot" style="background:var(--amber)"></span>Comunidad <span id="hsbComPct" style="color:var(--text)">30%</span></span>
+            </div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--muted);line-height:1.8">
+              El score de riesgo integra datos históricos + reportes ciudadanos recientes. A mayor actividad comunitaria, mayor peso del dato en tiempo real.
+            </div>
+          </div>
+        </div>
+
+        <!-- ── COMMUNITY FEED (live reports list) ── -->
+        <div class="mside-section">
+          <div class="mside-lbl" style="display:flex;align-items:center;justify-content:space-between">
+            <span>REPORTES RECIENTES</span>
+            <span class="cr-counter-badge"><div class="crb-dot"></div><span id="crTotalCount">0</span></span>
+          </div>
+          <div class="community-feed" id="communityFeed">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--muted);text-align:center;padding:14px 0;line-height:1.9">
+              Sin reportes aún.<br>Haz click en el mapa o usa<br>el botón 📍 para reportar.
+            </div>
           </div>
         </div>
 
@@ -1221,6 +1343,14 @@ body.ai-disabled .screens { top:calc(var(--nav-h) + 28px); }
 
     <div style="flex:1;position:relative;">
       <div id="leafmap"></div>
+
+      <!-- ── REPORT FAB ── -->
+      <button class="report-fab" id="reportFab" onclick="openReportModal()">
+        <div class="rfab-dot"></div>
+        📍 REPORTAR INCIDENTE
+        <span class="rfab-count" id="fabCount">0 hoy</span>
+      </button>
+
       <div class="map-hud">
         <div class="hud-corners">
           <div class="hud-c tl"></div><div class="hud-c tr"></div>
@@ -1244,6 +1374,107 @@ body.ai-disabled .screens { top:calc(var(--nav-h) + 28px); }
 
   </div>
 </div><!-- /s-map -->
+
+<!-- ════════════════════════════════════════
+     COMMUNITY REPORT MODAL
+════════════════════════════════════════ -->
+<div class="rep-modal-overlay" id="repModalOverlay" onclick="closeRepModalOutside(event)">
+  <div class="rep-modal" id="repModal">
+
+    <div class="rmod-head">
+      <div>
+        <div class="rmod-title">📍 REPORTAR INCIDENTE</div>
+        <div class="rmod-sub">ANÓNIMO · SIN REGISTRO · DATOS NO ALMACENADOS EN SERVIDOR</div>
+      </div>
+      <button class="rmod-close" onclick="closeRepModal()">✕</button>
+    </div>
+
+    <div class="rmod-body">
+
+      <!-- Location selector -->
+      <div class="loc-selector" id="locSelector" onclick="pickLocationFromMap()">
+        <div class="ls-ico">📍</div>
+        <div class="ls-text">
+          <div class="ls-main" id="locMain">Usar mi ubicación actual</div>
+          <div class="ls-sub" id="locSub">Click para seleccionar en el mapa, o se usará el centro del mapa</div>
+        </div>
+        <div class="ls-btn">FIJAR →</div>
+      </div>
+
+      <!-- Type grid -->
+      <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Tipo de incidente</div>
+      <div class="type-grid" id="typeGrid">
+        <div class="type-cell" data-type="robo" data-color="#ff3d3d" onclick="selectType(this)">
+          <div class="tc-ico">🔴</div>
+          <div><div class="tc-name">ROBO</div><div class="tc-desc">Robo con violencia</div></div>
+        </div>
+        <div class="type-cell" data-type="asalto" data-color="#ff6b35" onclick="selectType(this)">
+          <div class="tc-ico">⚠️</div>
+          <div><div class="tc-name">ASALTO</div><div class="tc-desc">Amenaza o golpes</div></div>
+        </div>
+        <div class="type-cell" data-type="hurto" data-color="#ffab00" onclick="selectType(this)">
+          <div class="tc-ico">🟡</div>
+          <div><div class="tc-name">HURTO</div><div class="tc-desc">Sin violencia directa</div></div>
+        </div>
+        <div class="type-cell" data-type="vehicular" data-color="#ff3d3d" onclick="selectType(this)">
+          <div class="tc-ico">🚗</div>
+          <div><div class="tc-name">ROBO VEHICULAR</div><div class="tc-desc">Auto, moto, transporte</div></div>
+        </div>
+        <div class="type-cell" data-type="acoso" data-color="#9b6dff" onclick="selectType(this)">
+          <div class="tc-ico">😰</div>
+          <div><div class="tc-name">ACOSO</div><div class="tc-desc">Hostigamiento</div></div>
+        </div>
+        <div class="type-cell" data-type="zona_segura" data-color="#00e676" onclick="selectType(this)">
+          <div class="tc-ico">✅</div>
+          <div><div class="tc-name">ZONA SEGURA</div><div class="tc-desc">Área tranquila ahora</div></div>
+        </div>
+      </div>
+
+      <!-- Severity -->
+      <div class="sev-wrap">
+        <div class="sev-label-row">
+          <div class="sev-lbl">Severidad percibida</div>
+          <div class="sev-val" id="sevLabel" style="color:var(--amber)">3 — MEDIO</div>
+        </div>
+        <input type="range" class="sev-slider" id="sevSlider" min="1" max="5" value="3" oninput="updateSev(this.value)"/>
+        <div class="sev-ticks">
+          <span class="sev-tick">1 LEVE</span>
+          <span class="sev-tick">2</span>
+          <span class="sev-tick">3 MEDIO</span>
+          <span class="sev-tick">4</span>
+          <span class="sev-tick">5 CRÍTICO</span>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Descripción breve <span style="color:var(--ghost)">(opcional)</span></div>
+      <textarea class="rep-textarea" id="repDesc" placeholder="Ej: dos personas en moto, zona mal iluminada..." maxlength="200"></textarea>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--ghost);text-align:right;margin-bottom:10px">
+        <span id="descCount">0</span>/200
+      </div>
+
+      <!-- Privacy note -->
+      <div class="privacy-note">
+        <div class="pn-ico">🔒</div>
+        <div>
+          <span style="color:var(--blue)">PRIVACIDAD GARANTIZADA</span><br>
+          Este reporte es 100% anónimo. No se guarda tu IP, nombre ni metadata de sesión.<br>
+          Los reportes sin 2+ validaciones se eliminan automáticamente en 2 horas.
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button class="rep-submit" id="repSubmitBtn" onclick="submitReport()" disabled>
+        <span>📍</span> <span id="repSubmitLbl">SELECCIONA UN TIPO DE INCIDENTE</span>
+      </button>
+      <div class="rate-warn" id="rateWarn">
+        ⚠ Límite alcanzado: máx. 5 reportes por sesión.<br>
+        Esto protege la integridad del mapa comunitario.
+      </div>
+
+    </div><!-- /rmod-body -->
+  </div><!-- /rep-modal -->
+</div><!-- /rep-modal-overlay -->
 
 <!-- ════════════════════════════════════════
      SCREEN 3 — ROUTE ANALYSIS
@@ -1570,12 +1801,13 @@ let leafMap, leafHeat;
 
 // Layer state: risk layers ON by default, context layers OFF
 const LAYER_STATE = {
-  robbery:     { on:true,  group:'risk', color:'#ff3d3d', label:'Crimen'        },
-  traffic:     { on:true,  group:'risk', color:'#ff6b35', label:'Tráfico'       },
-  lighting:    { on:true,  group:'risk', color:'#ffeb3b', label:'Iluminación'   },
-  restaurants: { on:false, group:'ctx',  color:'#00e676', label:'Puntos Seguros'},
-  transport:   { on:false, group:'ctx',  color:'#29b6f6', label:'Transporte'    },
-  sensors:     { on:false, group:'ctx',  color:'#9b6dff', label:'Sensores C5'   },
+  robbery:     { on:true,  group:'risk', color:'#ff3d3d', label:'Crimen'               },
+  traffic:     { on:true,  group:'risk', color:'#ff6b35', label:'Tráfico'              },
+  lighting:    { on:true,  group:'risk', color:'#ffeb3b', label:'Iluminación'          },
+  restaurants: { on:false, group:'ctx',  color:'#00e676', label:'Puntos Seguros'       },
+  transport:   { on:false, group:'ctx',  color:'#29b6f6', label:'Transporte'           },
+  sensors:     { on:false, group:'ctx',  color:'#9b6dff', label:'Sensores C5'          },
+  community:   { on:false, group:'ctx',  color:'#ffab00', label:'Reportes Ciudadanos'  },
 };
 
 // Leaflet layer groups keyed by layer id
@@ -1788,6 +2020,7 @@ function initLeafMap(){
   MAP_LAYERS.restaurants = buildSafeSpotsLayer();
   MAP_LAYERS.transport   = buildTransportLayer();
   MAP_LAYERS.sensors     = buildSensorsLayer();
+  MAP_LAYERS.community   = L.layerGroup(); // starts empty, populated by reports
 
   // Add layers that are ON by default
   Object.entries(LAYER_STATE).forEach(([k,v])=>{
@@ -1809,6 +2042,20 @@ function initLeafMap(){
     const col=z.w>3.5?'var(--red)':z.w>2.5?'var(--amber)':'var(--green)';
     zs.innerHTML+=`<div class="zone-stat"><span class="zs-name">${z.name}</span><div class="zs-bar-wrap"><div class="zs-bar" style="width:${pct}%;background:${col}"></div></div><span class="zs-val">${z.inc}</span></div>`;
   });
+
+  // Map click → pre-fill location and open report modal
+  leafMap.on('click', e=>{
+    repPickedLat = e.latlng.lat;
+    repPickedLng = e.latlng.lng;
+    document.getElementById('locMain').textContent =
+      `${e.latlng.lat.toFixed(4)}°N, ${Math.abs(e.latlng.lng).toFixed(4)}°W`;
+    document.getElementById('locSub').textContent = 'Ubicación fijada desde el mapa';
+    document.getElementById('locSelector').classList.add('has-loc');
+    openReportModal();
+  });
+
+  // Seed 6 demo community reports so the map isn't empty on first open
+  seedDemoReports();
 
   updateLayerHUD();
 }
@@ -2159,6 +2406,398 @@ function buildReport(){
 
   document.getElementById('rdFooter').style.display='flex';
   showToast('✓ Reporte generado. En producción: jsPDF.');
+}
+
+// ─── COMMUNITY REPORTS ENGINE ─────────────────────────────────
+// Level 1: Quick report · Level 2: Validation · Level 3: Hybrid score
+
+const REPORT_TYPES = {
+  robo:       { label:'Robo',           ico:'🔴', color:'#ff3d3d', safe:false },
+  asalto:     { label:'Asalto',         ico:'⚠️',  color:'#ff6b35', safe:false },
+  hurto:      { label:'Hurto',          ico:'🟡', color:'#ffab00', safe:false },
+  vehicular:  { label:'Robo Vehicular', ico:'🚗', color:'#ff3d3d', safe:false },
+  acoso:      { label:'Acoso',          ico:'😰', color:'#9b6dff', safe:false },
+  zona_segura:{ label:'Zona Segura',    ico:'✅', color:'#00e676', safe:true  },
+};
+
+const SEV_LABELS = ['','LEVE','BAJO','MEDIO','ALTO','CRÍTICO'];
+const SEV_COLORS = ['','var(--green)','var(--green)','var(--amber)','var(--amber)','var(--red)'];
+
+// In-memory store (no backend — demo mode)
+let communityReports = [];
+let repPickedLat = 19.4326;
+let repPickedLng = -99.1332;
+let repSelectedType = null;
+let sessionReportCount = 0;
+const MAX_SESSION_REPORTS = 5;
+const DECAY_MINUTES = 120; // 2 hours
+const CONFIRM_THRESHOLD = 2;
+
+// ── Level 1: Report Modal ───────────────────────────────────────
+function openReportModal(){
+  document.getElementById('repModalOverlay').classList.add('open');
+  // Reset form
+  document.querySelectorAll('.type-cell').forEach(c=>c.classList.remove('sel'));
+  repSelectedType = null;
+  document.getElementById('sevSlider').value = 3;
+  document.getElementById('repDesc').value = '';
+  document.getElementById('descCount').textContent = '0';
+  updateSev(3);
+  updateRepSubmitBtn();
+  document.getElementById('rateWarn').classList.toggle('show', sessionReportCount >= MAX_SESSION_REPORTS);
+}
+function closeRepModal(){
+  document.getElementById('repModalOverlay').classList.remove('open');
+}
+function closeRepModalOutside(e){
+  if(e.target === document.getElementById('repModalOverlay')) closeRepModal();
+}
+function pickLocationFromMap(){
+  closeRepModal();
+  showToast('📍 Click en el mapa para fijar la ubicación');
+}
+function selectType(el){
+  document.querySelectorAll('.type-cell').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  repSelectedType = el.dataset.type;
+  const col = el.dataset.color;
+  el.style.setProperty('--tc-color', col);
+  updateRepSubmitBtn();
+}
+function updateSev(v){
+  const lbl = document.getElementById('sevLabel');
+  lbl.textContent = `${v} — ${SEV_LABELS[v]}`;
+  lbl.style.color = SEV_COLORS[v];
+}
+document.addEventListener('DOMContentLoaded', ()=>{
+  const ta = document.getElementById('repDesc');
+  if(ta) ta.addEventListener('input', ()=>{
+    document.getElementById('descCount').textContent = ta.value.length;
+  });
+});
+function updateRepSubmitBtn(){
+  const btn = document.getElementById('repSubmitBtn');
+  const lbl = document.getElementById('repSubmitLbl');
+  const limited = sessionReportCount >= MAX_SESSION_REPORTS;
+  if(!repSelectedType){
+    btn.disabled = true;
+    lbl.textContent = 'SELECCIONA UN TIPO DE INCIDENTE';
+  } else if(limited){
+    btn.disabled = true;
+    lbl.textContent = 'LÍMITE DE REPORTES ALCANZADO';
+  } else {
+    btn.disabled = false;
+    const t = REPORT_TYPES[repSelectedType];
+    lbl.textContent = `${t.ico} ENVIAR REPORTE · ${t.label.toUpperCase()}`;
+  }
+}
+
+// ── Level 1 Submit ──────────────────────────────────────────────
+function submitReport(){
+  if(!repSelectedType || sessionReportCount >= MAX_SESSION_REPORTS) return;
+
+  const sev   = parseInt(document.getElementById('sevSlider').value);
+  const desc  = document.getElementById('repDesc').value.trim();
+  const type  = REPORT_TYPES[repSelectedType];
+  const now   = new Date();
+
+  const report = {
+    id:       `cr-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
+    type:     repSelectedType,
+    label:    type.label,
+    ico:      type.ico,
+    color:    type.color,
+    safe:     type.safe,
+    sev,
+    desc:     desc || null,
+    lat:      repPickedLat,
+    lng:      repPickedLng,
+    ts:       now,
+    confirms: 0,
+    denies:   0,
+    // status: unverified → confirmed (≥2 confirms) | expired (timeout w/ 0 confirms)
+    status:   'unverified',
+    // decay: expires at ts + DECAY_MINUTES if no confirmations
+    expiresAt: new Date(now.getTime() + DECAY_MINUTES * 60000),
+  };
+
+  communityReports.unshift(report);
+  sessionReportCount++;
+
+  closeRepModal();
+  addReportPin(report);
+  renderCommunityFeed();
+  updateCommunityCounters();
+
+  // Auto-enable community layer on first report
+  const layerRow = document.getElementById('communityLayerRow');
+  if(layerRow && !LAYER_STATE.community.on){
+    togMapLayer(layerRow);
+    layerRow.classList.add('on');
+  }
+
+  showToast(`${type.ico} Reporte enviado · ${type.label} · Esperando validación (2+)`);
+
+  // Reset location picker for next report
+  repPickedLat = leafMap ? leafMap.getCenter().lat : 19.4326;
+  repPickedLng = leafMap ? leafMap.getCenter().lng : -99.1332;
+  document.getElementById('locMain').textContent = 'Usar mi ubicación actual';
+  document.getElementById('locSub').textContent = 'Click para seleccionar en el mapa, o se usará el centro del mapa';
+  document.getElementById('locSelector').classList.remove('has-loc');
+
+  // Schedule decay check
+  setTimeout(()=>checkDecay(report.id), DECAY_MINUTES * 60000);
+}
+
+// ── Level 2: Validation ─────────────────────────────────────────
+function voteReport(reportId, vote){
+  const r = communityReports.find(r=>r.id===reportId);
+  if(!r) return;
+  if(vote === 'confirm') r.confirms++;
+  else r.denies++;
+
+  // Promote to confirmed if ≥ threshold
+  if(r.confirms >= CONFIRM_THRESHOLD && r.status === 'unverified'){
+    r.status = 'confirmed';
+    updateReportPin(r);
+    showToast(`✅ Reporte confirmado por la comunidad — se integra al score`);
+    updateHybridScore();
+  } else if(r.denies >= CONFIRM_THRESHOLD * 2){
+    // Enough denies → remove
+    removeReport(reportId);
+    showToast('⊘ Reporte rechazado por la comunidad');
+    return;
+  } else {
+    updateReportPin(r);
+    showToast(vote==='confirm' ? '👍 Confirmación registrada' : '👎 Rechazo registrado');
+  }
+  renderCommunityFeed();
+}
+
+function checkDecay(reportId){
+  const r = communityReports.find(r=>r.id===reportId);
+  if(!r || r.status==='confirmed') return;
+  if(r.confirms < CONFIRM_THRESHOLD){
+    removeReport(reportId);
+    renderCommunityFeed();
+    updateCommunityCounters();
+    showToast('⏱ Reporte expirado sin validación suficiente');
+  }
+}
+
+function removeReport(reportId){
+  communityReports = communityReports.filter(r=>r.id!==reportId);
+  // Remove marker from map
+  if(leafMap && MAP_LAYERS.community){
+    MAP_LAYERS.community.eachLayer(l=>{
+      if(l._reportId === reportId) MAP_LAYERS.community.removeLayer(l);
+    });
+  }
+  renderCommunityFeed();
+  updateCommunityCounters();
+  updateHybridScore();
+}
+
+// ── Map Pins ────────────────────────────────────────────────────
+function addReportPin(r){
+  if(!leafMap) return;
+  const pinClass = r.safe ? 'cr-pin-safe'
+    : r.status==='confirmed' ? 'cr-pin-confirmed'
+    : 'cr-pin-unverified';
+
+  const icon = L.divIcon({
+    html:`<div class="${pinClass}" data-id="${r.id}">${r.ico}</div>`,
+    className:'urban-marker',
+    iconSize:[28,28], iconAnchor:[14,14]
+  });
+
+  const marker = L.marker([r.lat, r.lng], {icon});
+  marker._reportId = r.id;
+  marker.bindPopup(buildValidationPopup(r), {
+    className:'val-popup', maxWidth:260, minWidth:240
+  });
+  marker.addTo(MAP_LAYERS.community);
+}
+
+function updateReportPin(r){
+  if(!leafMap || !MAP_LAYERS.community) return;
+  MAP_LAYERS.community.eachLayer(l=>{
+    if(l._reportId === r.id){
+      MAP_LAYERS.community.removeLayer(l);
+      addReportPin(r);
+    }
+  });
+}
+
+// ── Level 2: Validation popup HTML ──────────────────────────────
+function buildValidationPopup(r){
+  const sevCol = SEV_COLORS[r.sev] || 'var(--amber)';
+  const sevPct = ((r.sev-1)/4*100).toFixed(0);
+  const statusBadge = r.status==='confirmed'
+    ? `<span class="vp-badge confirmed">✅ CONFIRMADO</span>`
+    : r.safe
+    ? `<span class="vp-badge safe-badge">🟢 SEGURO</span>`
+    : `<span class="vp-badge unverified">⏳ NO VERIFICADO</span>`;
+  const age = timeAgo(r.ts);
+  const decayMin = Math.max(0, Math.round((r.expiresAt - new Date()) / 60000));
+  const decayPct = Math.min(100, (decayMin / DECAY_MINUTES) * 100).toFixed(0);
+
+  return `<div class="vp-body">
+    <div class="vp-header">
+      <div class="vp-type-ico">${r.ico}</div>
+      <div class="vp-type-name" style="color:${r.color}">${r.label.toUpperCase()}</div>
+    </div>
+    <div class="vp-meta">📍 ${r.lat.toFixed(4)}°N · hace ${age}</div>
+    ${r.desc ? `<div class="vp-desc">${r.desc}</div>` : ''}
+    <div class="vp-sev-row">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--muted);width:60px">SEV ${r.sev}/5</div>
+      <div class="vp-sev-bar-wrap">
+        <div class="vp-sev-bar" style="width:${sevPct}%;background:${sevCol}"></div>
+      </div>
+    </div>
+    ${r.status !== 'confirmed' ? `
+    <div class="vp-validation">
+      <button class="vp-btn confirm" onclick="voteReport('${r.id}','confirm');this.closest('.leaflet-popup').querySelector('.vp-vote-count').textContent='👍 ${r.confirms+1} · 👎 ${r.denies}'">
+        👍 CONFIRMAR (${r.confirms})
+      </button>
+      <button class="vp-btn deny" onclick="voteReport('${r.id}','deny');this.closest('.leaflet-popup').querySelector('.vp-vote-count').textContent='👍 ${r.confirms} · 👎 ${r.denies+1}'">
+        👎 DESMENTIR (${r.denies})
+      </button>
+    </div>` : ''}
+    <div class="vp-badge-row">
+      ${statusBadge}
+      <span class="vp-badge citizen-badge">👥 CIUDADANO</span>
+      <span class="vp-vote-count">👍 ${r.confirms} · 👎 ${r.denies}</span>
+    </div>
+    ${r.status !== 'confirmed' ? `
+    <div class="decay-bar-wrap" title="Expira en ${decayMin} min si no se valida">
+      <div class="decay-bar" style="width:${decayPct}%"></div>
+    </div>
+    <div style="font-family:var(--mono);font-size:8px;color:var(--ghost);margin-top:3px">⏱ expira en ${decayMin} min sin validación</div>` : ''}
+  </div>`;
+}
+
+// ── Community Feed (sidebar) ─────────────────────────────────────
+function renderCommunityFeed(){
+  const feed = document.getElementById('communityFeed');
+  if(!feed) return;
+  if(communityReports.length === 0){
+    feed.innerHTML = `<div style="font-family:var(--mono);font-size:9px;color:var(--muted);text-align:center;padding:14px 0;line-height:1.9">
+      Sin reportes aún.<br>Haz click en el mapa o usa<br>el botón 📍 para reportar.
+    </div>`;
+    return;
+  }
+  feed.innerHTML = communityReports.slice(0,8).map(r=>{
+    const cls = r.safe ? 'cf-safe' : r.status==='confirmed' ? 'cf-confirmed' : 'cf-unverified';
+    const badge = r.status==='confirmed'
+      ? `<span class="cf-status-badge" style="background:var(--red-dim);color:var(--red)">✅ CONFIRMADO</span>`
+      : r.safe
+      ? `<span class="cf-status-badge" style="background:var(--green-dim);color:var(--green)">🟢 SEGURO</span>`
+      : `<span class="cf-status-badge" style="background:var(--amber-dim);color:var(--amber)">⏳ SIN VERIFICAR</span>`;
+    return `<div class="cf-item ${cls}" onclick="focusReport('${r.id}')">
+      <div class="cf-top">
+        <div class="cf-ico">${r.ico}</div>
+        <div class="cf-name" style="color:${r.color}">${r.label}</div>
+        <div class="cf-time">${timeAgo(r.ts)}</div>
+      </div>
+      ${r.desc ? `<div class="cf-desc">${r.desc}</div>` : `<div class="cf-desc" style="color:var(--ghost)">Sin descripción</div>`}
+      <div class="cf-footer">
+        <span class="cf-votes">
+          <span class="cf-vote-up">👍 ${r.confirms}</span>
+          <span class="cf-vote-down"> 👎 ${r.denies}</span>
+        </span>
+        <span style="font-family:var(--mono);font-size:8px;color:var(--muted)">SEV ${r.sev}/5</span>
+        ${badge}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function focusReport(id){
+  const r = communityReports.find(r=>r.id===id);
+  if(!r || !leafMap) return;
+  leafMap.setView([r.lat, r.lng], 16, {animate:true});
+}
+
+// ── Level 3: Hybrid score ────────────────────────────────────────
+function updateHybridScore(){
+  const confirmed = communityReports.filter(r=>r.status==='confirmed'&&!r.safe).length;
+  const total     = communityReports.length;
+  const section   = document.getElementById('hybridScoreSection');
+  if(!section) return;
+
+  if(total === 0){ section.style.display='none'; return; }
+  section.style.display='block';
+
+  // Weight: starts 100% ML, community adds up to 40% weight as reports grow
+  const comWeight  = Math.min(40, confirmed * 8); // 8% per confirmed report, max 40%
+  const mlWeight   = 100 - comWeight;
+  const comPct     = comWeight.toFixed(0) + '%';
+  const mlPct      = mlWeight.toFixed(0) + '%';
+
+  document.getElementById('hsbMl').style.width  = mlPct;
+  document.getElementById('hsbCom').style.width  = comPct;
+  document.getElementById('hsbMlPct').textContent = mlPct;
+  document.getElementById('hsbComPct').textContent = comPct;
+}
+
+// ── Counters & HUD ───────────────────────────────────────────────
+function updateCommunityCounters(){
+  const total = communityReports.length;
+  const el1 = document.getElementById('crTotalCount');
+  const el2 = document.getElementById('fabCount');
+  const el3 = document.getElementById('communityLayerCount');
+  if(el1) el1.textContent = total;
+  if(el2) el2.textContent = `${total} hoy`;
+  if(el3) el3.textContent = total;
+}
+
+// ── Seed demo reports (so map isn't empty on first load) ─────────
+function seedDemoReports(){
+  const seeds = [
+    {type:'robo',      lat:19.449, lng:-99.123, sev:4, desc:'Robo a transeúnte en esquina oscura', confirms:2, denies:0, minsAgo:18 },
+    {type:'hurto',     lat:19.416, lng:-99.107, sev:2, desc:'Cartera sustraída en el metro', confirms:3, denies:0, minsAgo:44 },
+    {type:'zona_segura',lat:19.432,lng:-99.198, sev:1, desc:'Área tranquila, buena iluminación',confirms:1,denies:0, minsAgo:12 },
+    {type:'asalto',    lat:19.366, lng:-99.063, sev:4, desc:'Dos personas en moto, zona Iztapalapa', confirms:2, denies:1, minsAgo:67 },
+    {type:'vehicular', lat:19.444, lng:-99.147, sev:5, desc:'', confirms:0, denies:0, minsAgo:8 },
+    {type:'hurto',     lat:19.440, lng:-99.135, sev:3, desc:'Bolsillo en Tepito cerca del mercado', confirms:1, denies:0, minsAgo:31 },
+  ];
+  seeds.forEach(s=>{
+    const t = REPORT_TYPES[s.type];
+    const now = new Date();
+    const r = {
+      id:`cr-seed-${Math.random().toString(36).slice(2,9)}`,
+      type:s.type, label:t.label, ico:t.ico, color:t.color, safe:t.safe,
+      sev:s.sev, desc:s.desc,
+      lat:s.lat, lng:s.lng,
+      ts: new Date(now.getTime() - s.minsAgo * 60000),
+      confirms:s.confirms, denies:s.denies,
+      status: s.confirms >= CONFIRM_THRESHOLD ? 'confirmed' : 'unverified',
+      expiresAt: new Date(now.getTime() + (DECAY_MINUTES - s.minsAgo) * 60000),
+    };
+    communityReports.push(r);
+    addReportPin(r);
+  });
+  renderCommunityFeed();
+  updateCommunityCounters();
+  updateHybridScore();
+  // Auto-show community layer with seed data
+  const layerRow = document.getElementById('communityLayerRow');
+  if(layerRow){
+    LAYER_STATE.community.on = true;
+    layerRow.classList.add('on');
+    if(leafMap) MAP_LAYERS.community.addTo(leafMap);
+    updateLayerHUD();
+    updateLayerCount();
+  }
+}
+
+// ── Helper: time ago string ──────────────────────────────────────
+function timeAgo(ts){
+  const mins = Math.round((new Date() - new Date(ts)) / 60000);
+  if(mins < 1)  return 'ahora';
+  if(mins < 60) return `${mins} min`;
+  return `${Math.floor(mins/60)}h`;
 }
 
 // ─── AI MODE ENGINE ───────────────────────────────────────────
