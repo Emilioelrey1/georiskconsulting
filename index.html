@@ -1,0 +1,1066 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GeoRISK Consulting | Riesgo, datos y operación</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;1,14..32,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      /* ── Paleta de marca ── */
+      --blue:       #0049FC;
+      --blueD:      #0957C3;
+      --blueBg:     #051D2E;
+
+      --bg:         #FFFFFF;
+      --bg2:        #F2F2F2;
+      --text:       #1A1A1A;
+      --text2:      #2c2c2c;
+      --muted:      #5c6370;
+      --line:       rgba(26,26,26,.11);
+      --line2:      rgba(26,26,26,.07);
+
+      --panel:      #FFFFFF;
+      --chipBg:     rgba(0,73,252,.04);
+
+      --dark:       #051D2E;
+      --dark2:      #071f30;
+      --dark3:      #071828;
+
+      --blueL:      rgba(0,73,252,.10);
+      --blueL2:     rgba(0,73,252,.28);
+
+      --radius:     16px;
+      --radius2:    999px;
+
+      --shadow:     0 20px 48px rgba(5,29,46,.14);
+      --shadow2:    0 6px 20px rgba(5,29,46,.08);
+      --shadowCard: 0 1px 3px rgba(5,29,46,.07), 0 4px 16px rgba(5,29,46,.05);
+
+      --mono:  'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+      --sans:  'Inter', system-ui, -apple-system, Segoe UI, sans-serif;
+      --serif: 'Syne', system-ui, sans-serif;   /* display / headlines */
+
+      --max:      1140px;
+      --headerH:  72px;
+      --focus:    rgba(0,73,252,.55);
+    }
+
+    *{ box-sizing:border-box; }
+    html{ scroll-behavior:smooth; }
+
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background:var(--bg);
+      color:var(--text);
+      line-height:1.58;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    a{ color:inherit; text-decoration:none; }
+    img{ max-width:100%; display:block; }
+
+    :focus-visible{
+      outline:2px solid var(--focus);
+      outline-offset:3px;
+      border-radius:10px;
+    }
+
+    @media(prefers-reduced-motion:reduce){
+      html{ scroll-behavior:auto; }
+      *{ transition:none!important; animation:none!important; }
+    }
+
+    .wrap{ max-width:var(--max); margin:0 auto; padding:0 24px; }
+
+    /* ── Skip link ───────────────────────────────── */
+    .skip{
+      position:absolute; left:-999px; top:10px;
+      background:var(--panel); border:1px solid var(--line);
+      box-shadow:var(--shadow2); border-radius:10px;
+      padding:10px 14px; z-index:9999;
+      font-size:13px; font-weight:600;
+    }
+    .skip:focus{ left:18px; }
+
+    /* ── Header ──────────────────────────────────── */
+    header.site-header{
+      position:sticky; top:0; z-index:80;
+      background:rgba(255,255,255,.92);
+      backdrop-filter:blur(16px) saturate(1.4);
+      -webkit-backdrop-filter:blur(16px) saturate(1.4);
+      border-bottom:1px solid var(--line);
+      transition:box-shadow .2s ease;
+    }
+    header.site-header.scrolled{
+      box-shadow:0 2px 16px rgba(5,29,46,.09);
+    }
+
+    .header-inner{
+      display:flex; align-items:center;
+      justify-content:space-between; gap:16px;
+      padding:14px 0;
+    }
+
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      font-weight:800; letter-spacing:-.1px;
+      white-space:nowrap; font-size:17px;
+      font-family:var(--serif);
+    }
+
+    .mark{
+      width:36px; height:36px; flex:0 0 auto;
+      border-radius:10px;
+      background:linear-gradient(135deg, var(--blue), var(--blueD));
+      box-shadow:0 6px 18px rgba(0,73,252,.28);
+      display:flex; align-items:center; justify-content:center;
+      position:relative; overflow:hidden;
+    }
+    .mark::after{
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(135deg,rgba(255,255,255,.18) 0%,transparent 60%);
+    }
+    .mark svg{ position:relative; z-index:1; }
+
+    .brand-text{ display:flex; flex-direction:column; gap:1px; }
+    .brand-name{ font-family:var(--serif); font-weight:800; font-size:15px; line-height:1; letter-spacing:-.1px; }
+    .brand-sub{ font-size:11px; font-weight:500; color:var(--muted); letter-spacing:.1px; line-height:1; font-family:var(--sans); }
+
+    nav.topnav{
+      display:flex; gap:4px; flex-wrap:wrap;
+      justify-content:flex-end; align-items:center;
+    }
+    nav.topnav a{
+      color:var(--muted); padding:7px 11px;
+      border-radius:10px; border:1px solid transparent;
+      font-weight:500; font-size:13.5px;
+      transition:color .12s, background .12s, border-color .12s;
+    }
+    nav.topnav a:hover{
+      color:var(--text); border-color:var(--line);
+      background:rgba(26,26,26,.04);
+    }
+
+    /* ── Rail ────────────────────────────────────── */
+    .rail{
+      position:sticky; top:var(--headerH); z-index:70;
+      background:rgba(255,255,255,.94);
+      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--line);
+    }
+
+    .rail-inner{
+      position:relative; display:flex;
+      align-items:center; gap:10px; padding:10px 0;
+    }
+
+    .chip-scroll{
+      flex:1 1 auto; min-width:0;
+      overflow:auto hidden; scrollbar-width:none;
+      scroll-snap-type:x mandatory;
+      -webkit-overflow-scrolling:touch; padding:2px 0;
+    }
+    .chip-scroll::-webkit-scrollbar{ display:none; }
+
+    .chip-row{ display:flex; gap:8px; padding:2px 2px; width:max-content; }
+
+    .chip{
+      scroll-snap-align:start;
+      display:inline-flex; align-items:center; gap:7px;
+      padding:8px 13px; border-radius:var(--radius2);
+      border:1px solid var(--line);
+      background:var(--chipBg);
+      color:var(--muted); font-weight:500; font-size:12.5px;
+      white-space:nowrap; user-select:none;
+      transition:background .14s, border-color .14s, color .14s, transform .08s;
+    }
+    .chip:hover{
+      background:var(--blueL);
+      border-color:var(--blueL2);
+      color:var(--blue);
+      transform:translateY(-1px);
+    }
+    .chip.active{
+      background:var(--blueL);
+      border-color:var(--blueL2);
+      color:var(--blue);
+      font-weight:700;
+    }
+
+    .rail-cta{ flex:0 0 auto; display:flex; align-items:center; gap:8px; }
+
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:6px; padding:8px 13px; border-radius:10px;
+      border:1px solid var(--line); background:var(--panel);
+      color:var(--text); font-weight:600; font-size:12px;
+      letter-spacing:.1px; cursor:pointer;
+      transition:background .12s, transform .07s, border-color .12s, box-shadow .12s;
+      font-family:var(--sans);
+    }
+    .btn:hover{
+      background:var(--bg2); border-color:rgba(26,26,26,.18);
+      box-shadow:0 2px 8px rgba(5,29,46,.07);
+    }
+    .btn:active{ transform:translateY(1px); }
+    .btn.ghost{ background:transparent; color:var(--muted); border-color:transparent; }
+    .btn.ghost:hover{ background:rgba(26,26,26,.04); border-color:var(--line); color:var(--text); }
+
+    .fade-left,.fade-right{
+      position:absolute; top:0; bottom:0;
+      width:48px; pointer-events:none; z-index:2;
+    }
+    .fade-left{ left:0; background:linear-gradient(90deg,#fff 20%,transparent 100%); }
+    .fade-right{ right:60px; background:linear-gradient(270deg,#fff 0%,transparent 100%); }
+
+    /* ── Secciones generales ─────────────────────── */
+    main{ display:block; }
+
+    section.block{
+      padding:64px 0;
+      border-bottom:1px solid var(--line2);
+      background:var(--bg);
+    }
+
+    .block-inner{
+      opacity:0; transform:translateY(18px);
+      transition:opacity .5s ease, transform .5s ease;
+    }
+    .block-inner.visible{ opacity:1; transform:translateY(0); }
+
+    .block h2{
+      margin:0 0 8px 0; font-size:28px;
+      letter-spacing:-.4px; font-weight:800;
+      font-family:var(--serif);
+    }
+    .block p{ margin:0; color:var(--muted); max-width:84ch; }
+
+    .section-label{
+      display:inline-flex; align-items:center; gap:6px;
+      font-family:var(--mono); font-size:11px; font-weight:400;
+      color:var(--blue); letter-spacing:.8px;
+      text-transform:uppercase; margin-bottom:14px;
+    }
+    .section-label::before{
+      content:''; display:inline-block;
+      width:16px; height:1px;
+      background:var(--blue); opacity:.6;
+    }
+
+    .section-sub{
+      margin:0 0 20px 0; color:var(--muted);
+      max-width:84ch; font-size:15px;
+    }
+
+    .card{
+      background:var(--panel); border:1px solid var(--line);
+      border-radius:var(--radius); box-shadow:var(--shadowCard);
+      padding:22px;
+      transition:box-shadow .18s, border-color .18s, transform .18s;
+    }
+    .card:hover{
+      box-shadow:0 8px 28px rgba(5,29,46,.10);
+      border-color:rgba(0,73,252,.18);
+      transform:translateY(-2px);
+    }
+
+    .two{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    @media(max-width:980px){ .two{ grid-template-columns:1fr; } }
+
+    .badge{
+      display:inline-flex; align-items:center; gap:7px;
+      font-size:11.5px; font-weight:600;
+      padding:5px 10px; border-radius:999px;
+      border:1px solid var(--blueL2);
+      background:var(--blueL);
+      color:var(--blueD);
+      letter-spacing:.1px; font-family:var(--mono);
+    }
+
+    .clean{
+      margin:12px 0 0 0; padding-left:16px;
+      color:var(--muted); font-size:14px;
+    }
+    .clean li{ margin:8px 0; line-height:1.5; }
+    .clean li::marker{ color:var(--blue); opacity:.5; }
+
+    .note{
+      border-left:3px solid var(--blue);
+      padding:12px 14px;
+      background:var(--blueL);
+      border-radius:0 12px 12px 0;
+      color:var(--muted); margin-top:16px; font-size:13.5px;
+    }
+    .note b{ color:var(--text); }
+
+    .mono{ font-family:var(--mono); }
+
+    /* ── Intro ───────────────────────────────────── */
+    .intro-section{
+      padding:72px 0 56px;
+      background:var(--bg);
+      border-bottom:1px solid var(--line2);
+    }
+
+    /* ── Feature (dark) ──────────────────────────── */
+    .feature{
+      background:var(--dark);
+      color:#fff;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      position:relative; overflow:hidden;
+    }
+    .feature::before{
+      content:''; position:absolute; inset:0;
+      background:radial-gradient(ellipse 80% 60% at 20% 50%, rgba(0,73,252,.18) 0%, transparent 70%);
+      pointer-events:none;
+    }
+
+    .feature-inner{
+      position:relative; display:flex;
+      align-items:flex-end; justify-content:space-between;
+      gap:20px; padding:32px 0 34px;
+    }
+    .meta{
+      color:rgba(255,255,255,.45); font-weight:400;
+      font-size:11.5px; letter-spacing:1px;
+      text-transform:uppercase; font-family:var(--mono);
+      margin:0 0 10px 0;
+    }
+    .title{
+      margin:0; font-family:var(--serif);
+      font-size:clamp(28px, 4vw, 48px);
+      line-height:1.06; letter-spacing:-.4px;
+      font-weight:700; max-width:640px;
+    }
+    @media(max-width:700px){ .feature-inner{ flex-direction:column; align-items:flex-start; } }
+
+    .actions{ display:flex; gap:8px; align-items:center; flex:0 0 auto; }
+    .action{
+      display:inline-flex; align-items:center; gap:9px;
+      padding:10px 14px; border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,73,252,.18);
+      color:#fff; font-weight:600; font-size:12.5px;
+      letter-spacing:.1px; cursor:pointer;
+      transition:background .14s, border-color .14s, transform .07s;
+      font-family:var(--sans);
+    }
+    .action:hover{
+      border-color:rgba(255,255,255,.28);
+      background:rgba(0,73,252,.32);
+    }
+    .action:active{ transform:translateY(1px); }
+    .pill{
+      font-family:var(--mono); font-weight:500; font-size:10.5px;
+      padding:3px 7px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.2);
+      background:rgba(0,73,252,.35);
+      opacity:.92; letter-spacing:.5px;
+    }
+
+    /* ── Statement ───────────────────────────────── */
+    .statement{
+      min-height:80vh; display:flex;
+      align-items:center; justify-content:center;
+      padding:80px 18px; background:var(--bg);
+      position:relative; overflow:hidden;
+    }
+    .statement::before{
+      content:''; position:absolute; inset:0;
+      background-image:
+        linear-gradient(rgba(0,73,252,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,73,252,.05) 1px, transparent 1px);
+      background-size:60px 60px;
+      pointer-events:none;
+      mask-image:radial-gradient(ellipse 70% 70% at 50% 50%, black 0%, transparent 100%);
+    }
+    .statement-inner{ position:relative; max-width:1000px; text-align:center; }
+    .statement h2{
+      margin:0; font-family:var(--serif);
+      font-size:clamp(28px, 4.5vw, 56px);
+      line-height:1.1; letter-spacing:-.4px; font-weight:800;
+    }
+    .statement .line{
+      display:block;
+      will-change:opacity, filter, transform;
+      transition:opacity .18s linear, filter .18s linear, transform .18s linear;
+    }
+    .statement .muted{ color:var(--muted); font-weight:600; }
+
+    /* ── CTA doble ───────────────────────────────── */
+    .cta-block{
+      border-top:1px solid var(--line2);
+      border-bottom:1px solid var(--line2);
+      background:var(--bg);
+    }
+    .cta-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:32px 0; }
+    @media(max-width:900px){ .cta-grid{ grid-template-columns:1fr; } }
+
+    .cta{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:30px 28px; border-radius:16px;
+      font-family:var(--serif);
+      font-size:clamp(20px, 2.5vw, 28px);
+      font-weight:700; cursor:pointer;
+      border:1px solid var(--line);
+      transition:transform .12s ease, border-color .14s, box-shadow .14s;
+      user-select:none;
+    }
+    .cta.light{ background:var(--bg2); color:var(--text); }
+    .cta.dark{ background:var(--dark); color:#fff; border-color:rgba(255,255,255,.06); }
+    .cta-arrow{
+      width:38px; height:38px; border-radius:50%;
+      border:1px solid currentColor;
+      display:flex; align-items:center; justify-content:center;
+      opacity:.5; flex:0 0 auto;
+      transition:opacity .14s, transform .14s;
+    }
+    .cta:hover .cta-arrow{ opacity:.9; transform:translateX(3px); }
+    .cta:hover{ border-color:rgba(0,73,252,.28); transform:translateY(-2px); box-shadow:var(--shadow2); }
+    .cta.dark:hover{ border-color:rgba(0,73,252,.5); }
+    .cta:active{ transform:translateY(0); }
+
+    /* ── Precios ─────────────────────────────────── */
+    .price-tag{
+      font-family:var(--mono); font-size:18px; font-weight:500;
+      color:var(--text); margin:14px 0 0 0; letter-spacing:-.2px;
+    }
+    .card.featured{
+      border-color:var(--blueL2);
+      background:linear-gradient(160deg, rgba(0,73,252,.05) 0%, var(--panel) 50%);
+      box-shadow:0 4px 24px rgba(0,73,252,.12);
+    }
+    .card.featured:hover{ box-shadow:0 10px 36px rgba(0,73,252,.18); }
+
+    /* ── Footer ──────────────────────────────────── */
+    footer.footer{
+      background:var(--dark3);
+      border-top:1px solid rgba(255,255,255,.06);
+      padding:72px 0 44px; font-size:13.5px;
+      color:rgba(255,255,255,.55);
+    }
+
+    .footer-brand{ display:flex; align-items:center; gap:10px; margin-bottom:48px; }
+    .footer-brand-name{ font-weight:800; font-size:15px; color:#fff; font-family:var(--serif); }
+    .footer-brand-sub{ font-size:11px; color:rgba(255,255,255,.4); font-weight:400; font-family:var(--sans); }
+
+    .footer-grid{
+      display:grid; grid-template-columns:repeat(4,1fr);
+      gap:48px; border-top:1px solid rgba(255,255,255,.07);
+      padding-top:40px;
+    }
+
+    footer.footer h4{
+      margin:0 0 14px 0; font-size:11px;
+      letter-spacing:.8px; color:rgba(255,255,255,.35);
+      font-weight:600; text-transform:uppercase;
+      font-family:var(--mono);
+    }
+    footer.footer ul{ list-style:none; padding:0; margin:0; }
+    footer.footer li{ margin:9px 0; }
+    footer.footer a{ color:rgba(255,255,255,.62); font-weight:400; transition:color .12s; }
+    footer.footer a:hover{ color:#fff; }
+
+    .footer-bottom{
+      margin-top:56px; padding-top:24px;
+      border-top:1px solid rgba(255,255,255,.07);
+      display:flex; justify-content:space-between;
+      align-items:center; flex-wrap:wrap; gap:16px;
+      color:rgba(255,255,255,.28); font-size:12px;
+      font-family:var(--mono);
+    }
+    .footer-locations{ display:flex; gap:12px; flex-wrap:wrap; letter-spacing:.4px; }
+    .footer-locations span{
+      cursor:default; padding:3px 8px; border-radius:999px;
+      border:1px solid rgba(0,73,252,.28); font-size:11px;
+      color:rgba(0,73,252,.7);
+    }
+
+    @media(max-width:900px){ .footer-grid{ grid-template-columns:1fr 1fr; } }
+    @media(max-width:520px){ .footer-grid{ grid-template-columns:1fr; } }
+
+    /* ── Contacto ────────────────────────────────── */
+    .contact-row{
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:14px; margin-top:20px;
+    }
+    @media(max-width:980px){ .contact-row{ grid-template-columns:1fr; } }
+
+    .link{
+      color:var(--blue);
+      text-decoration:underline;
+      text-decoration-color:rgba(0,73,252,.3);
+      text-underline-offset:3px; font-weight:600;
+    }
+    .link:hover{ text-decoration-color:var(--blue); }
+
+    .email-template{
+      font-family:var(--mono); font-size:12.5px; line-height:1.7;
+      white-space:pre-wrap; background:var(--bg2);
+      border:1px solid var(--line); border-radius:12px;
+      padding:16px; color:var(--muted); margin-top:14px;
+    }
+
+    /* ── Toast ───────────────────────────────────── */
+    .toast{
+      position:fixed; bottom:28px; left:50%;
+      transform:translateX(-50%) translateY(16px);
+      background:var(--dark); color:#fff;
+      padding:10px 18px; border-radius:999px;
+      font-size:13px; font-weight:600;
+      box-shadow:var(--shadow); z-index:9990;
+      opacity:0; pointer-events:none;
+      transition:opacity .2s ease, transform .2s ease;
+      white-space:nowrap; font-family:var(--sans);
+    }
+    .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  </style>
+</head>
+
+<body>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <a class="skip" href="#contenido">Saltar al contenido</a>
+
+  <!-- Header/Nav -->
+  <header class="site-header" aria-label="Encabezado institucional">
+    <div class="wrap header-inner">
+      <a class="brand" aria-label="GeoRISK Consulting — inicio" href="#contenido">
+        <div class="mark" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M9 2L16 6V12L9 16L2 12V6L9 2Z" stroke="rgba(255,255,255,.9)" stroke-width="1.4" fill="none"/>
+            <circle cx="9" cy="9" r="2.2" fill="rgba(255,255,255,.85)"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">GeoRISK Consulting</span>
+          <span class="brand-sub">Riesgo, datos y operación</span>
+        </div>
+      </a>
+      <nav class="topnav" aria-label="Navegación principal">
+        <a href="#servicios">Servicios</a>
+        <a href="#metodo">Método</a>
+        <a href="#entregables">Entregables</a>
+        <a href="#gobernanza">Gobernanza</a>
+        <a href="#precios">Precios</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Rail -->
+  <section class="rail" aria-label="Índice institucional por secciones">
+    <div class="wrap rail-inner">
+      <div class="chip-scroll" aria-label="Secciones (scroll horizontal)">
+        <div class="chip-row" role="list">
+          <a class="chip" role="listitem" href="#servicios">Servicios</a>
+          <a class="chip" role="listitem" href="#metodo">Método</a>
+          <a class="chip" role="listitem" href="#entregables">Entregables</a>
+          <a class="chip" role="listitem" href="#gobernanza">Gobernanza</a>
+          <a class="chip" role="listitem" href="#precios">Precios</a>
+          <a class="chip" role="listitem" href="#contacto">Contacto</a>
+        </div>
+      </div>
+      <div class="fade-left" aria-hidden="true"></div>
+      <div class="fade-right" aria-hidden="true"></div>
+      <div class="rail-cta">
+        <button class="btn ghost" type="button" id="btnIndice" aria-label="Volver al inicio de la página">↑ Inicio</button>
+      </div>
+    </div>
+  </section>
+
+  <main id="contenido" aria-label="Contenido principal">
+
+    <!-- Intro -->
+    <section class="intro-section" aria-label="Presentación institucional">
+      <div class="wrap">
+        <div class="block-inner">
+          <p class="section-label">Unidad de análisis aplicada</p>
+          <p class="section-sub">
+            GeoRISK opera como una unidad de análisis aplicada: define alcance, integra insumos,
+            produce entregables y documenta supuestos y limitaciones para uso interno (operación, control, auditoría).
+          </p>
+          <div class="two" aria-label="Marco de trabajo">
+            <article class="card">
+              <span class="badge">Definición</span>
+              <p class="section-sub" style="margin-top:12px">
+                Análisis territorial y temporal orientado a decisiones operativas. Enfoque en replicabilidad, trazabilidad y control de alcance.
+              </p>
+              <ul class="clean">
+                <li>Unidad de análisis por zona / ruta / ventana temporal</li>
+                <li>Entregables consistentes para circulación interna</li>
+                <li>Documentación de supuestos y límites</li>
+              </ul>
+            </article>
+            <article class="card">
+              <span class="badge">Límites operativos</span>
+              <p class="section-sub" style="margin-top:12px">
+                Se entregan insumos técnicos; no se sustituyen funciones internas de seguridad, custodia ni representación legal.
+              </p>
+              <ul class="clean">
+                <li>No vigilancia / custodia</li>
+                <li>No asesoría jurídica</li>
+                <li>Recomendaciones contextualizadas para decisión interna</li>
+              </ul>
+            </article>
+          </div>
+          <div class="note" role="note">
+            <b>Nota técnica:</b> la navegación superior y el rail están diseñados para lectura tipo "documento institucional": acceso rápido, estado activo por sección y mapa corporativo al final.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature oscuro -->
+    <section class="feature" aria-label="Módulo editorial institucional">
+      <div class="wrap feature-inner">
+        <div>
+          <p class="meta">Marco operativo</p>
+          <h2 class="title">Análisis territorial para decisiones operativas y de control</h2>
+        </div>
+        <div class="actions" aria-label="Acciones del documento">
+          <button class="action" type="button" id="btnPdf" data-pdf-url="" title="Configura data-pdf-url cuando exista un PDF real">
+            <span class="pill">PDF</span>
+            <span>Documento</span>
+          </button>
+          <button class="action" type="button" id="btnShare" title="Compartir enlace">
+            <span class="pill">↗</span>
+            <span>Compartir</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Statement -->
+    <section class="statement" aria-label="Declaración institucional">
+      <div class="statement-inner" id="statementText">
+        <h2>
+          <span class="line">GeoRISK traduce exposición territorial y temporal</span>
+          <span class="line"><span class="muted">en criterios operativos replicables</span></span>
+          <span class="line">para organizaciones con responsabilidad institucional.</span>
+        </h2>
+      </div>
+    </section>
+
+    <!-- CTAs -->
+    <section class="cta-block" aria-label="Acciones institucionales">
+      <div class="wrap cta-grid">
+        <div class="cta light" id="ctaReunion" role="button" tabindex="0" aria-label="Coordinar reunión breve">
+          Coordinar reunión breve
+          <span class="cta-arrow" aria-hidden="true">→</span>
+        </div>
+        <div class="cta dark" id="ctaExplorar" role="button" tabindex="0" aria-label="Explorar metodología">
+          Explorar metodología
+          <span class="cta-arrow" aria-hidden="true">→</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Servicios -->
+    <section id="servicios" class="block" aria-label="Servicios">
+      <div class="wrap">
+        <div class="block-inner">
+          <p class="section-label">Familias de servicio</p>
+          <h2>Servicios</h2>
+          <p class="section-sub">Servicios organizados por familias para facilitar contratación y coordinación interna. El enfoque se define por entregables y criterios de aceptación.</p>
+          <div class="two" role="list" aria-label="Familias de servicio">
+            <article class="card" role="listitem">
+              <span class="badge">Operación urbana</span>
+              <p class="section-sub" style="margin-top:12px">Lectura por zona/horario para priorizar decisiones operativas en puntos de operación.</p>
+              <ul class="clean">
+                <li>Diagnóstico territorial (zonas críticas y ventanas temporales)</li>
+                <li>Recomendaciones operativas por contexto</li>
+                <li>Informe ejecutivo utilizable por dirección / control</li>
+              </ul>
+            </article>
+            <article class="card" role="listitem">
+              <span class="badge">Logística</span>
+              <p class="section-sub" style="margin-top:12px">Priorización de tramos y ventanas de exposición para rutas y puntos de entrega.</p>
+              <ul class="clean">
+                <li>Lectura territorial de rutas y puntos</li>
+                <li>Alternativas operativas (sin promesas abiertas)</li>
+                <li>Síntesis para operación y seguimiento interno</li>
+              </ul>
+            </article>
+            <article class="card" role="listitem">
+              <span class="badge">Soporte técnico</span>
+              <p class="section-sub" style="margin-top:12px">Evidencia contextual y lectura territorial para uso interno de áreas legales / seguridad / compliance (sin sustituir al responsable).</p>
+              <ul class="clean">
+                <li>Informe técnico contextual</li>
+                <li>Anexos visuales orientados a comprensión</li>
+                <li>Trazabilidad de insumos y supuestos</li>
+              </ul>
+            </article>
+            <article class="card" role="listitem">
+              <span class="badge">Monitoreo</span>
+              <p class="section-sub" style="margin-top:12px">Seguimiento periódico por ventanas temporales definidas, con comparabilidad entre cortes.</p>
+              <ul class="clean">
+                <li>Actualizaciones por ciclo (semanal / mensual según alcance)</li>
+                <li>Indicadores acordados con el cliente</li>
+                <li>Registro de cambios (control interno)</li>
+              </ul>
+            </article>
+          </div>
+          <div class="note">
+            <b>Contratación:</b> se formaliza por alcance, entregables, tiempos y criterios. Esto reduce ambigüedad para procurement y auditoría interna.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Método -->
+    <section id="metodo" class="block" aria-label="Método">
+      <div class="wrap">
+        <div class="block-inner">
+          <p class="section-label">Proceso estandarizado</p>
+          <h2>Método</h2>
+          <p class="section-sub">Proceso operativo estandarizado. El objetivo es producir documentos utilizables y comparables entre proyectos, sin depender de herramientas del cliente.</p>
+          <div class="two" aria-label="Etapas del proceso">
+            <article class="card">
+              <span class="badge">01 — Definición de alcance</span>
+              <ul class="clean">
+                <li>Objetivo y preguntas técnicas</li>
+                <li>Unidad de análisis (zona / ruta / caso) y ventana temporal</li>
+                <li>Insumos requeridos y restricciones</li>
+                <li>Entregables + criterios de aceptación</li>
+              </ul>
+            </article>
+            <article class="card">
+              <span class="badge">02 — Integración de insumos</span>
+              <ul class="clean">
+                <li>Validación mínima de consistencia</li>
+                <li>Normalización para comparabilidad</li>
+                <li>Registro de fuentes e insumos (trazabilidad)</li>
+              </ul>
+            </article>
+          </div>
+          <div class="two" style="margin-top:14px">
+            <article class="card">
+              <span class="badge">03 — Análisis y síntesis ejecutiva</span>
+              <ul class="clean">
+                <li>Patrones por zona / horario</li>
+                <li>Priorización de hallazgos operativos</li>
+                <li>Escenarios de exposición (si aplica)</li>
+                <li>Recomendaciones contextualizadas</li>
+              </ul>
+            </article>
+            <article class="card">
+              <span class="badge">04 — Entrega y control</span>
+              <ul class="clean">
+                <li>Documento ejecutivo + anexos cuando aplica</li>
+                <li>Sección explícita de supuestos y limitaciones</li>
+                <li>Versionado básico de entregables</li>
+              </ul>
+            </article>
+          </div>
+          <div class="note">
+            <b>Principio operativo:</b> se evita complejidad innecesaria. Se privilegia utilidad, reproducibilidad y control de alcance.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Entregables -->
+    <section id="entregables" class="block" aria-label="Entregables">
+      <div class="wrap">
+        <div class="block-inner">
+          <p class="section-label">Formatos estándar</p>
+          <h2>Entregables</h2>
+          <p class="section-sub">Formatos estandarizados para lectura ejecutiva y archivo interno. Los entregables finales dependen del alcance formalizado.</p>
+          <div class="two" aria-label="Formatos y compatibilidad">
+            <article class="card">
+              <span class="badge">Paquete ejecutivo</span>
+              <ul class="clean">
+                <li>Informe ejecutivo (PDF) con hallazgos y recomendaciones</li>
+                <li>Anexo metodológico (cuando aplica) para trazabilidad</li>
+                <li>Visuales de apoyo (mapas / series / diagramas)</li>
+                <li>Lista de supuestos, limitaciones y alcance</li>
+              </ul>
+              <div class="note">
+                <b>Control documental:</b> se distingue qué es insumo, qué es resultado y qué es interpretación.
+              </div>
+            </article>
+            <article class="card">
+              <span class="badge">Compatibilidad interna</span>
+              <ul class="clean">
+                <li>Lenguaje técnico e impersonal (lectura institucional)</li>
+                <li>Estructura consistente: objetivo → método → hallazgos → recomendaciones</li>
+                <li>Listo para circulación en operación / compliance / auditoría</li>
+                <li>Evita dependencias externas y plataformas no verificables</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Gobernanza -->
+    <section id="gobernanza" class="block" aria-label="Gobernanza">
+      <div class="wrap">
+        <div class="block-inner">
+          <p class="section-label">Marco institucional</p>
+          <h2>Gobernanza</h2>
+          <p class="section-sub">Apartado institucional para clientes corporativos: define manejo de información, trazabilidad y límites del servicio. No se declaran certificaciones ni clientes sin evidencia verificable.</p>
+          <div class="two" aria-label="Políticas operativas">
+            <article class="card">
+              <span class="badge">Confidencialidad</span>
+              <ul class="clean">
+                <li>Minimización: se solicita solo lo necesario para el entregable</li>
+                <li>Separación por proyecto: insumos y resultados aislados por alcance</li>
+                <li>Canales de intercambio acordados con el cliente</li>
+                <li>NDA bajo requerimiento del cliente</li>
+              </ul>
+            </article>
+            <article class="card">
+              <span class="badge">Trazabilidad</span>
+              <ul class="clean">
+                <li>Registro de fuentes e insumos (públicos o provistos por el cliente con autorización)</li>
+                <li>Supuestos y criterios explícitos</li>
+                <li>Limitaciones documentadas en el entregable</li>
+                <li>Control básico de versiones</li>
+              </ul>
+            </article>
+          </div>
+          <div class="note">
+            <b>Límites:</b> GeoRISK no presta servicios de seguridad privada / custodia ni asesoría jurídica. El análisis se entrega como insumo técnico para decisión interna.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Precios -->
+    <section id="precios" class="block" aria-label="Precios">
+      <div class="wrap">
+        <div class="block-inner">
+          <p class="section-label">Rangos orientativos</p>
+          <h2>Precios</h2>
+          <p class="section-sub">Rangos orientativos. Se cotiza por alcance y entregable, no por horas. El precio final se formaliza en propuesta por proyecto.</p>
+          <div class="two" aria-label="Rangos orientativos">
+            <article class="card">
+              <span class="badge">Nivel 1</span>
+              <p class="section-sub" style="margin-top:12px"><b>Ficha ejecutiva</b> (1 página). Lectura preliminar del entorno y riesgos prioritarios.</p>
+              <p class="price-tag">$500 – $1,500 MXN</p>
+            </article>
+            <article class="card">
+              <span class="badge">Nivel 2</span>
+              <p class="section-sub" style="margin-top:12px"><b>Diagnóstico básico</b>. Análisis territorial base + 1–2 visuales y síntesis operativa.</p>
+              <p class="price-tag">$5,000 – $8,000 MXN</p>
+            </article>
+            <article class="card featured">
+              <span class="badge">Nivel 3</span>
+              <p class="section-sub" style="margin-top:12px"><b>Diagnóstico integral</b>. Lectura espacial / temporal detallada + anexos cuando aplique.</p>
+              <p class="price-tag">$15,000 – $25,000 MXN</p>
+            </article>
+            <article class="card">
+              <span class="badge">Soporte técnico</span>
+              <p class="section-sub" style="margin-top:12px"><b>Informe técnico contextual</b> por caso / expediente (sin asesoría jurídica).</p>
+              <p class="price-tag">$8,000 – $30,000 MXN</p>
+            </article>
+          </div>
+          <div class="note">
+            <b>Transparencia:</b> rangos sujetos a volumen, ventana temporal y disponibilidad de insumos. Se define por escrito el alcance y los criterios de aceptación.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contacto -->
+    <section id="contacto" class="block" aria-label="Contacto">
+      <div class="wrap">
+        <div class="block-inner">
+          <p class="section-label">Primer contacto</p>
+          <h2>Contacto</h2>
+          <p class="section-sub">Para coordinar una reunión breve, utilice los siguientes canales. Se recomienda no compartir información sensible en el primer contacto.</p>
+          <div class="contact-row" aria-label="Canales de contacto">
+            <article class="card">
+              <span class="badge">Canal principal</span>
+              <p class="section-sub" style="margin-top:12px">
+                Correo: <a class="link mono" href="mailto:georisk.consulting@gmail.com">georisk.consulting@gmail.com</a>
+              </p>
+              <ul class="clean">
+                <li>Modalidad: por proyecto (alcance + entregables)</li>
+                <li>NDA: bajo requerimiento del cliente</li>
+                <li>Intercambio de insumos: canal acordado con el cliente</li>
+              </ul>
+              <div class="note">
+                <b>Operativo:</b> al disponer de dominio corporativo, migrar a <span class="mono">contacto@tudominio.com</span>.
+              </div>
+            </article>
+            <article class="card">
+              <span class="badge">Solicitud rápida</span>
+              <div class="email-template">Asunto: Reunión breve / Alcance de proyecto – GeoRISK Consulting
+
+Buen día. Solicito coordinar una reunión de 15 minutos para revisar un posible alcance de trabajo (análisis territorial de riesgo y soporte técnico contextual).
+Agradezco compartir disponibilidad (día y hora) y el contexto general (zona/ruta/caso) sin incluir información sensible en este primer contacto.</div>
+              <p style="margin:14px 0 0 0; color:var(--muted); font-size:13.5px">
+                <a class="link" href="mailto:georisk.consulting@gmail.com?subject=Reuni%C3%B3n%20breve%20%2F%20Alcance%20de%20proyecto%20%E2%80%93%20GeoRISK%20Consulting&body=Buen%20d%C3%ADa.%20Solicito%20coordinar%20una%20reuni%C3%B3n%20de%2015%20minutos%20para%20revisar%20un%20posible%20alcance%20de%20trabajo%20(an%C3%A1lisis%20territorial%20de%20riesgo%20y%20soporte%20t%C3%A9cnico%20contextual).%0A%0AAgradezco%20compartir%20disponibilidad%20(d%C3%ADa%20y%20hora)%20y%20el%20contexto%20general%20(zona%2Fruta%2Fcaso)%20sin%20incluir%20informaci%C3%B3n%20sensible%20en%20este%20primer%20contacto.">
+                  Abrir correo con plantilla →
+                </a>
+              </p>
+              <div class="note">
+                <b>Disclaimer:</b> GeoRISK no presta servicios de seguridad privada / custodia ni asesoría jurídica.
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer" id="indice" aria-label="Índice corporativo y pie institucional">
+      <div class="wrap">
+        <div class="footer-brand">
+          <div class="mark" aria-hidden="true" style="width:32px;height:32px;border-radius:9px;">
+            <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+              <path d="M9 2L16 6V12L9 16L2 12V6L9 2Z" stroke="rgba(255,255,255,.9)" stroke-width="1.4" fill="none"/>
+              <circle cx="9" cy="9" r="2.2" fill="rgba(255,255,255,.85)"/>
+            </svg>
+          </div>
+          <div>
+            <div class="footer-brand-name">GeoRISK Consulting</div>
+            <div class="footer-brand-sub">Riesgo, datos y operación</div>
+          </div>
+        </div>
+        <div class="footer-grid" role="navigation" aria-label="Mapa del sitio">
+          <div>
+            <h4>Áreas de trabajo</h4>
+            <ul>
+              <li><a href="#servicios">Análisis territorial</a></li>
+              <li><a href="#servicios">Riesgo operativo</a></li>
+              <li><a href="#gobernanza">Seguridad institucional</a></li>
+              <li><a href="#metodo">Inteligencia aplicada</a></li>
+              <li><a href="#metodo">Planeación estratégica</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Casos de aplicación</h4>
+            <ul>
+              <li><a href="#servicios">Gobierno</a></li>
+              <li><a href="#servicios">Infraestructura crítica</a></li>
+              <li><a href="#servicios">Energía</a></li>
+              <li><a href="#servicios">Servicios financieros</a></li>
+              <li><a href="#servicios">Entornos urbanos</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Capacidades</h4>
+            <ul>
+              <li><a href="#metodo">Modelos predictivos</a></li>
+              <li><a href="#metodo">Integración de datos</a></li>
+              <li><a href="#metodo">Análisis geoespacial</a></li>
+              <li><a href="#metodo">Evaluación de escenarios</a></li>
+              <li><a href="#metodo">Monitoreo continuo</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Documentación</h4>
+            <ul>
+              <li><a href="#metodo">Metodología</a></li>
+              <li><a href="#gobernanza">Gobernanza de datos</a></li>
+              <li><a href="#gobernanza">Ética y responsabilidad</a></li>
+              <li><a href="#contacto" title="Próximamente disponible">Aviso de privacidad</a></li>
+              <li><a href="#contacto" title="Próximamente disponible">Términos de uso</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom" aria-label="Legal">
+          <div>© <span id="year"></span> GeoRISK Consulting. Todos los derechos reservados.</div>
+          <div class="footer-locations" aria-label="Regiones de operación">
+            <span>MX</span><span>LATAM</span><span>US</span><span>EU</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const header = document.querySelector('header.site-header');
+    function syncHeaderH(){
+      document.documentElement.style.setProperty('--headerH', (header?.offsetHeight ?? 72) + 'px');
+    }
+    window.addEventListener('resize', syncHeaderH);
+    syncHeaderH();
+
+    const sentinel = document.createElement('div');
+    sentinel.style.cssText = 'position:absolute;top:0;height:1px;width:1px;pointer-events:none;';
+    document.body.prepend(sentinel);
+    new IntersectionObserver(([e]) => header.classList.toggle('scrolled', !e.isIntersecting), { threshold:1 }).observe(sentinel);
+
+    // Chips activos
+    document.querySelectorAll('.chip-row .chip').forEach(chip => {
+      const id = (chip.getAttribute('href') || '').replace('#','');
+      const sec = document.getElementById(id);
+      if(!sec) return;
+      new IntersectionObserver(entries => {
+        entries.forEach(e => chip.classList.toggle('active', e.isIntersecting));
+      }, { threshold:0.3, rootMargin:'-5% 0px -5% 0px' }).observe(sec);
+    });
+
+    // Statement blur
+    const statementInner = document.getElementById('statementText');
+    const statementSection = statementInner?.closest('.statement');
+    const statementLines = statementInner ? [...statementInner.querySelectorAll('.line')] : [];
+    let ticking = false;
+    function clamp01(x){ return Math.min(Math.max(x,0),1); }
+    function updateStatement(){
+      if(!statementSection || !statementLines.length) return;
+      const rect = statementSection.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const progress = clamp01((vh - rect.top) / (vh + rect.height));
+      const t = clamp01((progress - 0.25) / 0.75);
+      const n = statementLines.length;
+      statementLines.forEach((line, i) => {
+        const p = clamp01((t - i/n) / (1/n));
+        line.style.opacity = Math.max(0.60, 1 - p * 0.38).toFixed(3);
+        line.style.filter = `blur(${(p * 1.6).toFixed(2)}px)`;
+        line.style.transform = `translateY(${(p * 7).toFixed(1)}px)`;
+      });
+    }
+    function onScroll(){ if(!ticking){ ticking=true; requestAnimationFrame(()=>{ updateStatement(); ticking=false; }); } }
+    window.addEventListener('scroll', onScroll, { passive:true });
+    window.addEventListener('resize', ()=>{ syncHeaderH(); updateStatement(); });
+    updateStatement();
+
+    // Reveal
+    const fadeObs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); fadeObs.unobserve(e.target); } });
+    }, { threshold:0.12 });
+    document.querySelectorAll('.block-inner').forEach(el => fadeObs.observe(el));
+
+    // Toast
+    const toast = document.getElementById('toast');
+    let toastTimer;
+    function showToast(msg){ toast.textContent=msg; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>toast.classList.remove('show'),2600); }
+
+    document.getElementById('btnShare')?.addEventListener('click', async () => {
+      try{
+        if(navigator.share) await navigator.share({ title:document.title, url:location.href });
+        else { await navigator.clipboard.writeText(location.href); showToast('Enlace copiado al portapapeles'); }
+      }catch(e){}
+    });
+
+    document.getElementById('btnPdf')?.addEventListener('click', () => {
+      const url = document.getElementById('btnPdf').getAttribute('data-pdf-url')||'';
+      if(url.trim()) window.open(url,'_blank','noopener,noreferrer');
+      else showToast('PDF no disponible. Configura data-pdf-url.');
+    });
+
+    document.getElementById('btnIndice')?.addEventListener('click', () => window.scrollTo({ top:0, behavior:'smooth' }));
+
+    function bindButtonLike(el, fn){
+      if(!el) return;
+      el.addEventListener('click', fn);
+      el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fn(); } });
+    }
+    bindButtonLike(document.getElementById('ctaReunion'), () => { location.hash='#contacto'; });
+    bindButtonLike(document.getElementById('ctaExplorar'), () => { location.hash='#metodo'; });
+  </script>
+</body>
+</html>
