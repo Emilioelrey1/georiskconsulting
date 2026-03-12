@@ -1,1066 +1,2313 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>GeoRISK Consulting | Riesgo, datos y operación</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>GeoRISK Navigator — Unified Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,900;1,700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;1,14..32,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════════════════ */
+:root {
+  --black:#04070f; --navy:#080d1a; --panel:#0b1220; --raise:#0e1628;
+  --border:#1a2a40; --border2:#243650;
+  --green:#00e676; --green-dim:rgba(0,230,118,.12); --green-glow:rgba(0,230,118,.35);
+  --amber:#ffab00; --amber-dim:rgba(255,171,0,.12);
+  --red:#ff3d3d;   --red-dim:rgba(255,61,61,.12);
+  --blue:#29b6f6;  --blue-dim:rgba(41,182,246,.12);
+  --violet:#9b6dff;
+  --text:#c8d8e8; --muted:#4a6080; --ghost:#2a3a50;
+  --mono:'Share Tech Mono',monospace;
+  --cond:'Barlow Condensed',sans-serif;
+  --body:'Barlow',sans-serif;
+  --nav-h:52px;
+  --r:4px;
+}
 
-  <style>
-    :root{
-      /* ── Paleta de marca ── */
-      --blue:       #0049FC;
-      --blueD:      #0957C3;
-      --blueBg:     #051D2E;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--black);color:var(--text);font-family:var(--body);overflow:hidden;-webkit-font-smoothing:antialiased;}
 
-      --bg:         #FFFFFF;
-      --bg2:        #F2F2F2;
-      --text:       #1A1A1A;
-      --text2:      #2c2c2c;
-      --muted:      #5c6370;
-      --line:       rgba(26,26,26,.11);
-      --line2:      rgba(26,26,26,.07);
+/* Scanline global */
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.06) 2px,rgba(0,0,0,.06) 4px);pointer-events:none;z-index:9999;}
 
-      --panel:      #FFFFFF;
-      --chipBg:     rgba(0,73,252,.04);
+/* ═══════════════════════════════════════════════════════
+   NAVIGATION BAR
+═══════════════════════════════════════════════════════ */
+.topnav{
+  position:fixed;top:0;left:0;right:0;height:var(--nav-h);
+  background:rgba(4,7,15,.95);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+  padding:0 20px;gap:0;z-index:8000;
+}
+.nav-brand{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--cond);font-weight:900;font-size:18px;
+  letter-spacing:2px;color:#fff;margin-right:32px;
+  text-decoration:none;flex-shrink:0;cursor:pointer;
+}
+.nav-brand-icon{
+  width:26px;height:26px;background:var(--green-dim);
+  border:1px solid var(--green);border-radius:3px;
+  display:flex;align-items:center;justify-content:center;font-size:12px;
+}
+.nav-brand .acc{color:var(--green);}
 
-      --dark:       #051D2E;
-      --dark2:      #071f30;
-      --dark3:      #071828;
+.nav-tabs{display:flex;align-items:stretch;flex:1;height:100%;}
+.nav-tab{
+  display:flex;align-items:center;gap:8px;
+  padding:0 18px;height:100%;
+  font-family:var(--mono);font-size:10px;letter-spacing:2px;
+  color:var(--muted);cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:color .15s,border-color .15s,background .15s;
+  white-space:nowrap;
+  text-transform:uppercase;
+}
+.nav-tab:hover{color:var(--text);background:rgba(255,255,255,.02);}
+.nav-tab.active{color:var(--green);border-bottom-color:var(--green);}
+.nav-tab .tab-ico{font-size:12px;opacity:.7;}
 
-      --blueL:      rgba(0,73,252,.10);
-      --blueL2:     rgba(0,73,252,.28);
+.nav-right{
+  display:flex;align-items:center;gap:12px;margin-left:auto;flex-shrink:0;
+}
+.nav-status{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;color:var(--green);letter-spacing:2px;}
+.status-dot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 
-      --radius:     16px;
-      --radius2:    999px;
+/* ═══════════════════════════════════════════════════════
+   SCREEN SYSTEM
+═══════════════════════════════════════════════════════ */
+.screens{position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;}
+.screen{
+  position:absolute;inset:0;
+  overflow:hidden;overflow-y:auto;
+  opacity:0;pointer-events:none;
+  transition:opacity .25s ease,transform .25s ease;
+  transform:translateY(6px);
+}
+.screen.active{opacity:1;pointer-events:auto;transform:translateY(0);}
+.screen::-webkit-scrollbar{width:4px;}
+.screen::-webkit-scrollbar-thumb{background:var(--border2);}
 
-      --shadow:     0 20px 48px rgba(5,29,46,.14);
-      --shadow2:    0 6px 20px rgba(5,29,46,.08);
-      --shadowCard: 0 1px 3px rgba(5,29,46,.07), 0 4px 16px rgba(5,29,46,.05);
+/* ═══════════════════════════════════════════════════════
+   SCREEN 1 — LANDING / HOME
+═══════════════════════════════════════════════════════ */
+#s-home{overflow-y:auto;}
 
-      --mono:  'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-      --sans:  'Inter', system-ui, -apple-system, Segoe UI, sans-serif;
-      --serif: 'Syne', system-ui, sans-serif;   /* display / headlines */
+.hero{
+  min-height:calc(100vh - var(--nav-h));
+  display:grid;grid-template-columns:1fr 1fr;
+  position:relative;overflow:hidden;
+}
+.hero-left{
+  display:flex;flex-direction:column;justify-content:center;
+  padding:60px 50px 60px 60px;position:relative;z-index:2;
+}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:10px;letter-spacing:4px;color:var(--green);
+  border:1px solid var(--green-dim);padding:5px 12px;
+  margin-bottom:24px;width:fit-content;
+  animation:fadeUp .5s .1s both;
+}
+.hero-title{
+  font-family:var(--cond);font-weight:900;
+  font-size:clamp(48px,6vw,88px);line-height:.9;
+  letter-spacing:-1px;color:#fff;margin-bottom:8px;
+  animation:fadeUp .5s .25s both;
+}
+.hero-title .g{color:var(--green);display:block;}
+.hero-title .d{color:var(--muted);font-size:.5em;display:block;font-weight:300;letter-spacing:6px;margin-top:8px;}
+.hero-sub{font-size:15px;line-height:1.7;color:var(--muted);margin:24px 0 36px;max-width:400px;animation:fadeUp .5s .4s both;}
+.hero-cta{display:flex;gap:14px;animation:fadeUp .5s .55s both;}
 
-      --max:      1140px;
-      --headerH:  72px;
-      --focus:    rgba(0,73,252,.55);
-    }
+.btn-p{
+  font-family:var(--mono);font-size:11px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--black);background:var(--green);border:none;
+  padding:13px 28px;cursor:pointer;
+  clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);
+  transition:background .15s,transform .1s;
+}
+.btn-p:hover{background:#fff;transform:translateY(-2px);}
+.btn-s{
+  font-family:var(--mono);font-size:11px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--text);background:transparent;border:1px solid var(--border);
+  padding:13px 28px;cursor:pointer;transition:border-color .15s,color .15s;
+}
+.btn-s:hover{border-color:var(--green);color:var(--green);}
 
-    *{ box-sizing:border-box; }
-    html{ scroll-behavior:smooth; }
+.hero-stats{
+  display:flex;gap:28px;margin-top:48px;
+  padding-top:28px;border-top:1px solid var(--border);
+  animation:fadeUp .5s .7s both;
+}
+.stat-val{font-family:var(--cond);font-size:30px;font-weight:900;color:#fff;line-height:1;}
+.stat-val .u{font-size:14px;color:var(--green);}
+.stat-lbl{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--muted);margin-top:3px;}
 
-    body{
-      margin:0;
-      font-family:var(--sans);
-      background:var(--bg);
-      color:var(--text);
-      line-height:1.58;
-      -webkit-font-smoothing:antialiased;
-    }
+/* Hero right — animated map preview */
+.hero-right{position:relative;overflow:hidden;background:var(--navy);border-left:1px solid var(--border);}
+.map-bg{
+  position:absolute;inset:0;
+  background:linear-gradient(rgba(0,230,118,.025) 1px,transparent 1px),
+             linear-gradient(90deg,rgba(0,230,118,.025) 1px,transparent 1px),var(--navy);
+  background-size:40px 40px;
+}
+.map-bg::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(0,230,118,.12) 1px,transparent 1px);background-size:40px 40px;}
+.map-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 40%,var(--navy) 90%);}
+.heatblob{position:absolute;border-radius:50%;filter:blur(40px);animation:pblob 4s ease-in-out infinite;}
+@keyframes pblob{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.15);opacity:.85}}
+.scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);animation:scan 6s linear infinite;opacity:.35;}
+@keyframes scan{0%{top:0%}100%{top:100%}}
+.map-panel-overlay{
+  position:absolute;background:rgba(4,7,15,.85);border:1px solid var(--border);
+  backdrop-filter:blur(8px);font-family:var(--mono);
+}
+.mpo-top{top:18px;left:18px;right:18px;padding:8px 12px;display:flex;justify-content:space-between;font-size:9px;letter-spacing:2px;color:var(--green);}
+.mpo-legend{bottom:18px;right:18px;padding:10px 12px;font-size:9px;}
+.leg-item{display:flex;align-items:center;gap:7px;color:var(--muted);margin-bottom:5px;letter-spacing:1px;}
+.leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 
-    a{ color:inherit; text-decoration:none; }
-    img{ max-width:100%; display:block; }
+/* Features section */
+.home-section{padding:80px 60px;border-top:1px solid var(--border);}
+.home-section.dark{background:var(--navy);}
+.sec-tag{font-family:var(--mono);font-size:10px;letter-spacing:4px;color:var(--green);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.sec-tag::after{content:'';height:1px;width:50px;background:var(--green-dim);}
+.sec-title{font-family:var(--cond);font-weight:900;font-size:clamp(32px,4vw,52px);line-height:.95;color:#fff;letter-spacing:-.5px;margin-bottom:16px;}
+.sec-desc{font-size:14px;line-height:1.7;color:var(--muted);max-width:500px;}
 
-    :focus-visible{
-      outline:2px solid var(--focus);
-      outline-offset:3px;
-      border-radius:10px;
-    }
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:50px;border:1px solid var(--border);}
+.feat-cell{
+  background:var(--panel);padding:32px 24px;
+  border-right:1px solid var(--border);border-bottom:1px solid var(--border);
+  position:relative;overflow:hidden;transition:background .2s;
+}
+.feat-cell:hover{background:var(--raise);}
+.feat-cell::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--green);transform:scaleX(0);transform-origin:left;transition:transform .3s ease;}
+.feat-cell:hover::after{transform:scaleX(1);}
+.feat-n{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:18px;}
+.feat-ico{width:44px;height:44px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px;transition:border-color .2s,background .2s;}
+.feat-cell:hover .feat-ico{border-color:var(--green);background:var(--green-dim);}
+.feat-t{font-family:var(--cond);font-size:18px;font-weight:700;color:#fff;letter-spacing:.5px;margin-bottom:8px;}
+.feat-d{font-size:12px;color:var(--muted);line-height:1.6;}
 
-    @media(prefers-reduced-motion:reduce){
-      html{ scroll-behavior:auto; }
-      *{ transition:none!important; animation:none!important; }
-    }
+/* Architecture */
+.arch-grid{display:grid;grid-template-columns:1fr 1.8fr;gap:50px;margin-top:50px;align-items:start;}
+.arch-diag{background:var(--panel);border:1px solid var(--border);padding:24px;font-family:var(--mono);font-size:11px;line-height:1.9;position:relative;overflow:hidden;}
+.arch-diag::before{content:'SYSTEM ARCHITECTURE';position:absolute;top:0;left:0;right:0;background:var(--border);padding:5px 14px;font-size:9px;letter-spacing:3px;color:var(--muted);}
+.arch-diag pre{margin-top:26px;}
+.g{color:var(--green);} .a{color:var(--amber);} .b{color:var(--blue);} .r{color:var(--red);}
+.svc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.svc-card{background:var(--panel);border:1px solid var(--border);padding:20px;position:relative;transition:border-color .2s;cursor:default;}
+.svc-card:hover{border-color:var(--green);}
+.svc-port{position:absolute;top:10px;right:10px;font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--muted);background:var(--border);padding:2px 7px;}
+.svc-ico{font-size:20px;margin-bottom:10px;}
+.svc-name{font-family:var(--cond);font-size:16px;font-weight:700;color:#fff;letter-spacing:1px;margin-bottom:3px;}
+.svc-tech{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--green);margin-bottom:8px;}
+.svc-desc{font-size:12px;color:var(--muted);line-height:1.5;}
 
-    .wrap{ max-width:var(--max); margin:0 auto; padding:0 24px; }
+/* Footer */
+.home-footer{background:var(--navy);border-top:1px solid var(--border);padding:30px 60px;display:flex;align-items:center;justify-content:space-between;}
+.footer-brand{font-family:var(--cond);font-size:16px;font-weight:700;letter-spacing:2px;color:#fff;}
+.footer-brand .acc{color:var(--green);}
+.footer-info{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:2px;}
 
-    /* ── Skip link ───────────────────────────────── */
-    .skip{
-      position:absolute; left:-999px; top:10px;
-      background:var(--panel); border:1px solid var(--line);
-      box-shadow:var(--shadow2); border-radius:10px;
-      padding:10px 14px; z-index:9999;
-      font-size:13px; font-weight:600;
-    }
-    .skip:focus{ left:18px; }
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
-    /* ── Header ──────────────────────────────────── */
-    header.site-header{
-      position:sticky; top:0; z-index:80;
-      background:rgba(255,255,255,.92);
-      backdrop-filter:blur(16px) saturate(1.4);
-      -webkit-backdrop-filter:blur(16px) saturate(1.4);
-      border-bottom:1px solid var(--line);
-      transition:box-shadow .2s ease;
-    }
-    header.site-header.scrolled{
-      box-shadow:0 2px 16px rgba(5,29,46,.09);
-    }
+/* ═══════════════════════════════════════════════════════
+   SCREEN 2 — MAP
+═══════════════════════════════════════════════════════ */
+#s-map{overflow:hidden;}
+.map-layout{display:flex;height:100%;}
 
-    .header-inner{
-      display:flex; align-items:center;
-      justify-content:space-between; gap:16px;
-      padding:14px 0;
-    }
+#leafmap{flex:1;height:100%;}
+.leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.75) saturate(.7) contrast(1.1);}
+.leaflet-container{background:#05070a;}
+.leaflet-control-zoom{display:none;}
 
-    .brand{
-      display:flex; align-items:center; gap:12px;
-      font-weight:800; letter-spacing:-.1px;
-      white-space:nowrap; font-size:17px;
-      font-family:var(--serif);
-    }
+.map-sidebar{
+  width:280px;flex-shrink:0;
+  background:rgba(8,13,26,.96);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  z-index:700;
+}
+.mside-head{padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.mside-title{font-family:var(--cond);font-size:14px;font-weight:700;letter-spacing:2px;color:#fff;}
+.mside-sub{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+.mside-body{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.mside-body::-webkit-scrollbar{width:3px;}
+.mside-section{padding:12px 16px;border-bottom:1px solid var(--border);}
+.mside-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.mside-lbl::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);}
 
-    .mark{
-      width:36px; height:36px; flex:0 0 auto;
-      border-radius:10px;
-      background:linear-gradient(135deg, var(--blue), var(--blueD));
-      box-shadow:0 6px 18px rgba(0,73,252,.28);
-      display:flex; align-items:center; justify-content:center;
-      position:relative; overflow:hidden;
-    }
-    .mark::after{
-      content:''; position:absolute; inset:0;
-      background:linear-gradient(135deg,rgba(255,255,255,.18) 0%,transparent 60%);
-    }
-    .mark svg{ position:relative; z-index:1; }
+.layer-row{display:flex;align-items:center;padding:7px 8px;border-radius:var(--r);background:rgba(255,255,255,.02);border:1px solid var(--border);cursor:pointer;gap:8px;margin-bottom:5px;transition:border-color .12s,background .12s;}
+.layer-row:hover{border-color:var(--border2);}
+.layer-row.on{border-color:rgba(41,182,246,.3);background:rgba(41,182,246,.05);}
+.lr-swatch{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.lr-name{font-family:var(--cond);font-size:13px;font-weight:500;flex:1;}
+.lr-count{font-family:var(--mono);font-size:9px;color:var(--muted);}
+.lr-sw{width:26px;height:15px;border-radius:8px;background:var(--muted);position:relative;transition:background .14s;flex-shrink:0;}
+.layer-row.on .lr-sw{background:var(--blue);}
+.lr-sw::after{content:'';position:absolute;top:2.5px;left:2.5px;width:10px;height:10px;border-radius:50%;background:#fff;transition:transform .14s;}
+.layer-row.on .lr-sw::after{transform:translateX(11px);}
 
-    .brand-text{ display:flex; flex-direction:column; gap:1px; }
-    .brand-name{ font-family:var(--serif); font-weight:800; font-size:15px; line-height:1; letter-spacing:-.1px; }
-    .brand-sub{ font-size:11px; font-weight:500; color:var(--muted); letter-spacing:.1px; line-height:1; font-family:var(--sans); }
+.zone-stat{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-family:var(--mono);font-size:10px;}
+.zs-name{color:var(--muted);}
+.zs-bar-wrap{flex:1;height:3px;background:var(--border);border-radius:2px;margin:0 10px;}
+.zs-bar{height:100%;border-radius:2px;}
+.zs-val{color:var(--text);min-width:24px;text-align:right;}
 
-    nav.topnav{
-      display:flex; gap:4px; flex-wrap:wrap;
-      justify-content:flex-end; align-items:center;
-    }
-    nav.topnav a{
-      color:var(--muted); padding:7px 11px;
-      border-radius:10px; border:1px solid transparent;
-      font-weight:500; font-size:13.5px;
-      transition:color .12s, background .12s, border-color .12s;
-    }
-    nav.topnav a:hover{
-      color:var(--text); border-color:var(--line);
-      background:rgba(26,26,26,.04);
-    }
+/* Map HUD */
+.map-hud{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:400;}
+.hud-corners{position:absolute;inset:10px;}
+.hud-c{position:absolute;width:16px;height:16px;border-color:rgba(41,182,246,.2);border-style:solid;}
+.hud-c.tl{top:0;left:0;border-width:2px 0 0 2px;}
+.hud-c.tr{top:0;right:0;border-width:2px 2px 0 0;}
+.hud-c.bl{bottom:0;left:0;border-width:0 0 2px 2px;}
+.hud-c.br{bottom:0;right:0;border-width:0 2px 2px 0;}
+.hud-topbar{
+  position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  background:rgba(8,13,26,.9);backdrop-filter:blur(14px);
+  border:1px solid var(--border2);border-radius:3px;
+  padding:6px 16px;display:flex;align-items:center;gap:14px;
+  font-family:var(--mono);font-size:9px;color:var(--muted);
+  pointer-events:none;white-space:nowrap;
+}
+.hud-topbar .sep{width:1px;height:9px;background:var(--border);}
+.hud-topbar b{color:var(--text);}
+.hud-live{display:flex;align-items:center;gap:4px;}
+.hud-live-dot{width:4px;height:4px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2s infinite;}
+.hud-legend-map{
+  position:absolute;bottom:18px;right:12px;pointer-events:auto;
+  background:rgba(8,13,26,.9);backdrop-filter:blur(12px);
+  border:1px solid var(--border2);border-radius:3px;padding:10px 12px;
+  font-family:var(--mono);font-size:9px;
+}
+.hleg-lbl{color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px;}
+.hleg-bar{height:5px;width:110px;border-radius:2px;background:linear-gradient(90deg,#00e676,#ffab00,#ff3d3d);margin-bottom:3px;}
+.hleg-ends{display:flex;justify-content:space-between;color:var(--muted);font-size:8px;}
 
-    /* ── Rail ────────────────────────────────────── */
-    .rail{
-      position:sticky; top:var(--headerH); z-index:70;
-      background:rgba(255,255,255,.94);
-      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
-      border-bottom:1px solid var(--line);
-    }
+/* ═══════════════════════════════════════════════════════
+   SCREEN 3 — ROUTE ANALYSIS
+═══════════════════════════════════════════════════════ */
+#s-routes{overflow:hidden;}
+.routes-layout{display:flex;height:100%;}
 
-    .rail-inner{
-      position:relative; display:flex;
-      align-items:center; gap:10px; padding:10px 0;
-    }
+.routes-panel{
+  width:320px;flex-shrink:0;
+  background:rgba(8,13,26,.98);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  z-index:700;
+}
+.rp-head{padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.rp-title{font-family:var(--cond);font-size:14px;font-weight:700;letter-spacing:2px;color:#fff;}
+.rp-sub{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+.rp-body{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.rp-body::-webkit-scrollbar{width:3px;}
+.rp-section{padding:12px 16px;border-bottom:1px solid var(--border);}
+.rp-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.rp-lbl::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);}
 
-    .chip-scroll{
-      flex:1 1 auto; min-width:0;
-      overflow:auto hidden; scrollbar-width:none;
-      scroll-snap-type:x mandatory;
-      -webkit-overflow-scrolling:touch; padding:2px 0;
-    }
-    .chip-scroll::-webkit-scrollbar{ display:none; }
+.field{margin-bottom:8px;}
+.field-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:4px;margin-bottom:5px;}
+.pip{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.pip-g{background:var(--green);box-shadow:0 0 5px var(--green);}
+.pip-r{background:var(--red);box-shadow:0 0 5px var(--red);}
+.inp{
+  width:100%;background:rgba(255,255,255,.03);
+  border:1px solid var(--border);border-radius:var(--r);
+  padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:11px;outline:none;
+  transition:border-color .12s,box-shadow .12s;
+}
+.inp:focus{border-color:rgba(41,182,246,.4);box-shadow:0 0 0 3px rgba(41,182,246,.07);}
+.inp::placeholder{color:var(--ghost);}
+.inp[type=datetime-local]{color-scheme:dark;font-size:10px;}
 
-    .chip-row{ display:flex; gap:8px; padding:2px 2px; width:max-content; }
+.btn-analyze{
+  width:100%;margin-top:10px;padding:10px 12px;
+  background:transparent;border:1px solid rgba(0,230,118,.35);border-radius:var(--r);
+  color:var(--green);font-family:var(--mono);font-size:10px;font-weight:500;
+  letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .14s,border-color .14s;
+}
+.btn-analyze:hover{background:var(--green-dim);border-color:var(--green);}
+.btn-analyze.busy{opacity:.6;pointer-events:none;}
+.btn-analyze .sp{width:11px;height:11px;border:1.5px solid rgba(0,230,118,.3);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;display:none;}
+.btn-analyze.busy .sp{display:block;}
+.btn-analyze.busy .anlbl{display:none;}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-    .chip{
-      scroll-snap-align:start;
-      display:inline-flex; align-items:center; gap:7px;
-      padding:8px 13px; border-radius:var(--radius2);
-      border:1px solid var(--line);
-      background:var(--chipBg);
-      color:var(--muted); font-weight:500; font-size:12.5px;
-      white-space:nowrap; user-select:none;
-      transition:background .14s, border-color .14s, color .14s, transform .08s;
-    }
-    .chip:hover{
-      background:var(--blueL);
-      border-color:var(--blueL2);
-      color:var(--blue);
-      transform:translateY(-1px);
-    }
-    .chip.active{
-      background:var(--blueL);
-      border-color:var(--blueL2);
-      color:var(--blue);
-      font-weight:700;
-    }
+.results-wrap{opacity:0;transform:translateY(6px);transition:opacity .3s ease,transform .3s ease;}
+.results-wrap.in{opacity:1;transform:translateY(0);}
+.empty-state{padding:20px;text-align:center;font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.9;}
+.empty-ico{font-size:22px;opacity:.3;margin-bottom:6px;}
 
-    .rail-cta{ flex:0 0 auto; display:flex; align-items:center; gap:8px; }
+/* Route cards */
+.rcard{border:1px solid var(--border);border-radius:var(--r);background:rgba(255,255,255,.02);margin-bottom:8px;cursor:pointer;overflow:hidden;position:relative;transition:border-color .12s,transform .1s;}
+.rcard:hover{transform:translateY(-1px);border-color:var(--border2);}
+.rcard.sel{border-color:rgba(0,230,118,.4);background:rgba(0,230,118,.03);}
+.rcard.sel .rc-stripe{opacity:1;}
+.rc-stripe{position:absolute;top:0;bottom:0;left:0;width:3px;opacity:.5;}
+.rc-top{display:flex;align-items:flex-start;padding:10px 12px 0;gap:8px;}
+.rc-name-b{flex:1;}
+.rc-name{font-family:var(--cond);font-size:14px;font-weight:700;letter-spacing:.03em;line-height:1;}
+.rc-via{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:2px;}
+.rc-badge{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:2px;align-self:flex-start;flex-shrink:0;}
+.rc-score-row{display:flex;align-items:center;gap:10px;padding:8px 12px;}
+.rc-ring{width:54px;height:54px;flex-shrink:0;position:relative;}
+.rc-ring svg{transform:rotate(-90deg);overflow:visible;}
+.rc-ring-txt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--mono);}
+.rc-sn{font-size:15px;font-weight:600;line-height:1;}
+.rc-sl{font-size:7px;color:var(--muted);letter-spacing:.04em;}
+.rc-stats{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:4px 6px;}
+.rc-stat-k{font-family:var(--mono);font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+.rc-stat-v{font-family:var(--cond);font-size:13px;font-weight:600;line-height:1.2;}
+.rc-chips{border-top:1px solid var(--border);padding:6px 12px;display:flex;gap:5px;flex-wrap:wrap;}
+.chip{font-family:var(--mono);font-size:8px;color:var(--muted);padding:2px 6px;border-radius:2px;background:rgba(255,255,255,.02);border:1px solid var(--border);display:flex;align-items:center;gap:3px;}
+.chip-pip{width:4px;height:4px;border-radius:50%;flex-shrink:0;}
+.rc-actions{border-top:1px solid var(--border);padding:6px 12px;display:flex;gap:5px;}
+.rc-btn{font-family:var(--mono);font-size:9px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:2px;padding:3px 8px;cursor:pointer;letter-spacing:.04em;transition:color .1s,border-color .1s;}
+.rc-btn:hover{color:var(--text);border-color:var(--border2);}
+.rc-btn.pri{color:var(--green);border-color:rgba(0,230,118,.3);}
+.rc-btn.pri:hover{background:var(--green-dim);}
+.btn-clr{font-family:var(--mono);font-size:9px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:2px;padding:2px 7px;cursor:pointer;display:none;transition:color .1s;}
+.btn-clr:hover{color:var(--text);}
+.res-header{display:flex;align-items:center;margin-bottom:8px;}
 
-    .btn{
-      display:inline-flex; align-items:center; justify-content:center;
-      gap:6px; padding:8px 13px; border-radius:10px;
-      border:1px solid var(--line); background:var(--panel);
-      color:var(--text); font-weight:600; font-size:12px;
-      letter-spacing:.1px; cursor:pointer;
-      transition:background .12s, transform .07s, border-color .12s, box-shadow .12s;
-      font-family:var(--sans);
-    }
-    .btn:hover{
-      background:var(--bg2); border-color:rgba(26,26,26,.18);
-      box-shadow:0 2px 8px rgba(5,29,46,.07);
-    }
-    .btn:active{ transform:translateY(1px); }
-    .btn.ghost{ background:transparent; color:var(--muted); border-color:transparent; }
-    .btn.ghost:hover{ background:rgba(26,26,26,.04); border-color:var(--line); color:var(--text); }
+/* Detail panel */
+.detail-panel{width:200px;flex-shrink:0;background:rgba(8,13,26,.98);border-left:1px solid var(--border);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s ease;z-index:700;position:relative;}
+.detail-panel.open{transform:translateX(0);}
+.dp-head{padding:12px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.dp-t{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:.04em;}
+.dp-s{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:2px;}
+.dp-body{flex:1;overflow-y:auto;padding:12px 14px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.dp-sec{margin-bottom:12px;}
+.dp-sec-l{font-family:var(--mono);font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
+.bar-item{margin-bottom:5px;}
+.bar-hdr{display:flex;justify-content:space-between;margin-bottom:2px;}
+.bar-n{font-family:var(--mono);font-size:9px;color:var(--muted);}
+.bar-v{font-family:var(--mono);font-size:9px;color:var(--text);}
+.bar-track{height:3px;background:var(--border);border-radius:2px;}
+.bar-fill{height:100%;border-radius:2px;transition:width .6s ease;}
+.dp-close{background:none;border:1px solid var(--border);border-radius:2px;padding:3px 8px;font-family:var(--mono);font-size:8px;color:var(--muted);cursor:pointer;margin-top:8px;width:100%;transition:color .1s;}
+.dp-close:hover{color:var(--text);}
 
-    .fade-left,.fade-right{
-      position:absolute; top:0; bottom:0;
-      width:48px; pointer-events:none; z-index:2;
-    }
-    .fade-left{ left:0; background:linear-gradient(90deg,#fff 20%,transparent 100%); }
-    .fade-right{ right:60px; background:linear-gradient(270deg,#fff 0%,transparent 100%); }
+/* Route map */
+#routemap{flex:1;height:100%;}
 
-    /* ── Secciones generales ─────────────────────── */
-    main{ display:block; }
+/* ═══════════════════════════════════════════════════════
+   SCREEN 4 — DASHBOARD
+═══════════════════════════════════════════════════════ */
+#s-dashboard{overflow-y:auto;}
+.dash-body{padding:24px 28px;}
+.dash-top-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.kpi-card{background:var(--panel);border:1px solid var(--border);padding:18px 20px;position:relative;overflow:hidden;transition:border-color .2s;}
+.kpi-card:hover{border-color:var(--border2);}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kpi-label{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.kpi-value{font-family:var(--cond);font-size:32px;font-weight:900;line-height:1;color:#fff;}
+.kpi-value .kpi-u{font-size:14px;margin-left:2px;}
+.kpi-sub{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:4px;display:flex;align-items:center;gap:4px;}
+.kpi-delta{font-size:10px;font-weight:600;}
+.kpi-delta.up{color:var(--red);}
+.kpi-delta.down{color:var(--green);}
 
-    section.block{
-      padding:64px 0;
-      border-bottom:1px solid var(--line2);
-      background:var(--bg);
-    }
+.dash-mid-row{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-bottom:20px;}
+.dash-card{background:var(--panel);border:1px solid var(--border);overflow:hidden;}
+.dash-card-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.dc-title{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:1px;color:#fff;}
+.dc-sub{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1px;}
+.dc-body{padding:16px;}
 
-    .block-inner{
-      opacity:0; transform:translateY(18px);
-      transition:opacity .5s ease, transform .5s ease;
-    }
-    .block-inner.visible{ opacity:1; transform:translateY(0); }
+/* Bar chart */
+.bar-chart{display:flex;flex-direction:column;gap:8px;}
+.bc-row{display:flex;align-items:center;gap:10px;}
+.bc-label{font-family:var(--mono);font-size:9px;color:var(--muted);width:90px;flex-shrink:0;letter-spacing:.04em;text-align:right;}
+.bc-track{flex:1;height:20px;background:rgba(255,255,255,.03);border-radius:2px;position:relative;overflow:hidden;}
+.bc-fill{height:100%;border-radius:2px;display:flex;align-items:center;padding-left:8px;transition:width 1s ease;}
+.bc-fill-lbl{font-family:var(--mono);font-size:9px;color:rgba(0,0,0,.7);font-weight:600;}
+.bc-val{font-family:var(--mono);font-size:9px;color:var(--text);width:28px;text-align:right;flex-shrink:0;}
 
-    .block h2{
-      margin:0 0 8px 0; font-size:28px;
-      letter-spacing:-.4px; font-weight:800;
-      font-family:var(--serif);
-    }
-    .block p{ margin:0; color:var(--muted); max-width:84ch; }
+/* Donut */
+.donut-wrap{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:8px 0;}
+.donut-legend{display:flex;flex-direction:column;gap:6px;width:100%;}
+.dl-row{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;}
+.dl-swatch{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.dl-name{flex:1;color:var(--muted);}
+.dl-val{color:var(--text);}
+.dl-pct{color:var(--muted);font-size:9px;}
 
-    .section-label{
-      display:inline-flex; align-items:center; gap:6px;
-      font-family:var(--mono); font-size:11px; font-weight:400;
-      color:var(--blue); letter-spacing:.8px;
-      text-transform:uppercase; margin-bottom:14px;
-    }
-    .section-label::before{
-      content:''; display:inline-block;
-      width:16px; height:1px;
-      background:var(--blue); opacity:.6;
-    }
+/* Timeline */
+.timeline-chart{position:relative;height:100px;}
+.tl-svg{width:100%;height:100%;}
 
-    .section-sub{
-      margin:0 0 20px 0; color:var(--muted);
-      max-width:84ch; font-size:15px;
-    }
+/* Hotspot table */
+.htable{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:10px;}
+.htable th{padding:6px 10px;text-align:left;color:var(--muted);letter-spacing:.06em;border-bottom:1px solid var(--border);font-weight:400;font-size:9px;}
+.htable td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--text);}
+.htable tr:hover td{background:rgba(255,255,255,.02);}
+.risk-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:2px;font-size:8px;font-weight:600;letter-spacing:.05em;}
 
-    .card{
-      background:var(--panel); border:1px solid var(--line);
-      border-radius:var(--radius); box-shadow:var(--shadowCard);
-      padding:22px;
-      transition:box-shadow .18s, border-color .18s, transform .18s;
-    }
-    .card:hover{
-      box-shadow:0 8px 28px rgba(5,29,46,.10);
-      border-color:rgba(0,73,252,.18);
-      transform:translateY(-2px);
-    }
+.dash-bottom-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
 
-    .two{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-    @media(max-width:980px){ .two{ grid-template-columns:1fr; } }
+/* Hourly heatmap */
+.hour-grid{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;margin-top:8px;}
+.hour-cell{height:32px;border-radius:2px;position:relative;cursor:default;transition:opacity .1s;}
+.hour-cell:hover{opacity:.8;}
+.hour-lbl-row{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;margin-top:3px;}
+.hlbl{font-family:var(--mono);font-size:7px;color:var(--muted);text-align:center;}
 
-    .badge{
-      display:inline-flex; align-items:center; gap:7px;
-      font-size:11.5px; font-weight:600;
-      padding:5px 10px; border-radius:999px;
-      border:1px solid var(--blueL2);
-      background:var(--blueL);
-      color:var(--blueD);
-      letter-spacing:.1px; font-family:var(--mono);
-    }
+/* ═══════════════════════════════════════════════════════
+   SCREEN 5 — REPORTS
+═══════════════════════════════════════════════════════ */
+#s-reports{overflow-y:auto;}
+.reports-body{padding:24px 28px;}
+.rep-layout{display:grid;grid-template-columns:1fr 1.4fr;gap:24px;}
+.rep-config{display:flex;flex-direction:column;gap:14px;}
+.rep-card{background:var(--panel);border:1px solid var(--border);overflow:hidden;}
+.rep-card-head{padding:12px 16px;border-bottom:1px solid var(--border);}
+.rep-card-t{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:1px;color:#fff;}
+.rep-card-s{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:2px;}
+.rep-card-body{padding:16px;}
+.rep-field{margin-bottom:10px;}
+.rep-field-l{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;}
+.rep-inp{width:100%;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:11px;outline:none;transition:border-color .12s;}
+.rep-inp:focus{border-color:rgba(0,230,118,.35);}
+.rep-inp::placeholder{color:var(--ghost);}
+.rep-select{width:100%;background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:11px;outline:none;cursor:pointer;}
 
-    .clean{
-      margin:12px 0 0 0; padding-left:16px;
-      color:var(--muted); font-size:14px;
-    }
-    .clean li{ margin:8px 0; line-height:1.5; }
-    .clean li::marker{ color:var(--blue); opacity:.5; }
+.check-list{display:flex;flex-direction:column;gap:6px;}
+.check-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:border-color .12s,background .12s;}
+.check-row.checked{border-color:rgba(0,230,118,.3);background:var(--green-dim);}
+.check-box{width:14px;height:14px;border:1px solid var(--border);border-radius:2px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s,border-color .12s;}
+.check-row.checked .check-box{background:var(--green);border-color:var(--green);}
+.check-t{font-family:var(--mono);font-size:10px;color:var(--muted);transition:color .12s;}
+.check-row.checked .check-t{color:var(--text);}
 
-    .note{
-      border-left:3px solid var(--blue);
-      padding:12px 14px;
-      background:var(--blueL);
-      border-radius:0 12px 12px 0;
-      color:var(--muted); margin-top:16px; font-size:13.5px;
-    }
-    .note b{ color:var(--text); }
+.btn-gen{
+  width:100%;padding:12px;background:var(--green);border:none;border-radius:var(--r);
+  color:var(--black);font-family:var(--mono);font-size:11px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .15s,transform .1s;margin-top:4px;
+}
+.btn-gen:hover{background:#fff;}
+.btn-gen:active{transform:scale(.99);}
+.btn-gen.busy{opacity:.7;pointer-events:none;}
+.btn-gen .gsp{width:12px;height:12px;border:1.5px solid rgba(0,0,0,.3);border-top-color:var(--black);border-radius:50%;animation:spin .7s linear infinite;display:none;}
+.btn-gen.busy .gsp{display:block;}
+.btn-gen.busy .glbl{display:none;}
 
-    .mono{ font-family:var(--mono); }
+/* Report preview */
+.rep-preview{background:var(--panel);border:1px solid var(--border);overflow:hidden;}
+.rep-preview-head{background:var(--border);padding:8px 16px;display:flex;align-items:center;justify-content:space-between;}
+.rpf-title{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--muted);}
+.rpf-dots{display:flex;gap:4px;}
+.rpf-dot{width:7px;height:7px;border-radius:50%;}
+.rep-doc{
+  background:#0a0f18;padding:24px;font-family:var(--mono);font-size:11px;
+  line-height:1.7;color:var(--text);min-height:400px;
+  transform:scale(.95);transform-origin:top center;
+}
+.rep-doc.generating{animation:glitch .15s steps(1) infinite;}
+@keyframes glitch{0%{opacity:1}50%{opacity:.7}100%{opacity:1}}
+.rdoc-header{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px;}
+.rdoc-logo{font-family:var(--cond);font-size:20px;font-weight:900;letter-spacing:2px;color:#fff;}
+.rdoc-logo .acc{color:var(--green);}
+.rdoc-meta{font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:4px;}
+.rdoc-section{margin-bottom:16px;}
+.rdoc-sec-title{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:1px;color:var(--green);margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:4px;}
+.rdoc-map-mock{height:120px;background:var(--navy);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:10px;margin-bottom:10px;position:relative;overflow:hidden;}
+.rdoc-map-mock::before{content:'';position:absolute;inset:0;background:linear-gradient(rgba(0,230,118,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(0,230,118,.015) 1px,transparent 1px);background-size:20px 20px;}
+.rdoc-route-row{display:flex;gap:6px;margin-bottom:6px;}
+.rdoc-route-box{flex:1;background:rgba(255,255,255,.03);border:1px solid var(--border);padding:8px 10px;border-radius:2px;}
+.rdoc-r-name{font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.5px;}
+.rdoc-r-stats{font-size:9px;color:var(--muted);margin-top:3px;}
+.rdoc-indicator{display:flex;justify-content:space-between;margin-bottom:5px;padding:4px 8px;background:rgba(255,255,255,.02);border-radius:2px;}
+.rdi-name{color:var(--muted);font-size:10px;}
+.rdi-val{font-size:10px;}
+.rdoc-footer{border-top:1px solid var(--border);padding-top:12px;font-size:9px;color:var(--muted);display:flex;justify-content:space-between;}
 
-    /* ── Intro ───────────────────────────────────── */
-    .intro-section{
-      padding:72px 0 56px;
-      background:var(--bg);
-      border-bottom:1px solid var(--line2);
-    }
+/* ═══════════════════════════════════════════════════════
+   URBAN LAYERS — two-group panel system
+═══════════════════════════════════════════════════════ */
 
-    /* ── Feature (dark) ──────────────────────────── */
-    .feature{
-      background:var(--dark);
-      color:#fff;
-      border-bottom:1px solid rgba(255,255,255,.06);
-      position:relative; overflow:hidden;
-    }
-    .feature::before{
-      content:''; position:absolute; inset:0;
-      background:radial-gradient(ellipse 80% 60% at 20% 50%, rgba(0,73,252,.18) 0%, transparent 70%);
-      pointer-events:none;
-    }
+/* Group header separator */
+.layer-group-label {
+  font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);padding:10px 16px 5px;
+  display:flex;align-items:center;gap:8px;
+}
+.layer-group-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);}
+.layer-group-label.ctx { color:var(--blue); }
+.layer-group-label.risk{ color:var(--red);  }
 
-    .feature-inner{
-      position:relative; display:flex;
-      align-items:flex-end; justify-content:space-between;
-      gap:20px; padding:32px 0 34px;
-    }
-    .meta{
-      color:rgba(255,255,255,.45); font-weight:400;
-      font-size:11.5px; letter-spacing:1px;
-      text-transform:uppercase; font-family:var(--mono);
-      margin:0 0 10px 0;
-    }
-    .title{
-      margin:0; font-family:var(--serif);
-      font-size:clamp(28px, 4vw, 48px);
-      line-height:1.06; letter-spacing:-.4px;
-      font-weight:700; max-width:640px;
-    }
-    @media(max-width:700px){ .feature-inner{ flex-direction:column; align-items:flex-start; } }
+/* Context layers have a subtly different look */
+.layer-row.ctx-layer { opacity:.75; }
+.layer-row.ctx-layer.on { opacity:1; border-color:rgba(41,182,246,.3); background:rgba(41,182,246,.04); }
+.layer-row.ctx-layer.on .lr-sw { background:var(--blue); }
 
-    .actions{ display:flex; gap:8px; align-items:center; flex:0 0 auto; }
-    .action{
-      display:inline-flex; align-items:center; gap:9px;
-      padding:10px 14px; border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(0,73,252,.18);
-      color:#fff; font-weight:600; font-size:12.5px;
-      letter-spacing:.1px; cursor:pointer;
-      transition:background .14s, border-color .14s, transform .07s;
-      font-family:var(--sans);
-    }
-    .action:hover{
-      border-color:rgba(255,255,255,.28);
-      background:rgba(0,73,252,.32);
-    }
-    .action:active{ transform:translateY(1px); }
-    .pill{
-      font-family:var(--mono); font-weight:500; font-size:10.5px;
-      padding:3px 7px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.2);
-      background:rgba(0,73,252,.35);
-      opacity:.92; letter-spacing:.5px;
-    }
+/* Urban layer icon slot */
+.lr-icon { font-size:13px; flex-shrink:0; width:18px; text-align:center; }
 
-    /* ── Statement ───────────────────────────────── */
-    .statement{
-      min-height:80vh; display:flex;
-      align-items:center; justify-content:center;
-      padding:80px 18px; background:var(--bg);
-      position:relative; overflow:hidden;
-    }
-    .statement::before{
-      content:''; position:absolute; inset:0;
-      background-image:
-        linear-gradient(rgba(0,73,252,.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,73,252,.05) 1px, transparent 1px);
-      background-size:60px 60px;
-      pointer-events:none;
-      mask-image:radial-gradient(ellipse 70% 70% at 50% 50%, black 0%, transparent 100%);
-    }
-    .statement-inner{ position:relative; max-width:1000px; text-align:center; }
-    .statement h2{
-      margin:0; font-family:var(--serif);
-      font-size:clamp(28px, 4.5vw, 56px);
-      line-height:1.1; letter-spacing:-.4px; font-weight:800;
-    }
-    .statement .line{
-      display:block;
-      will-change:opacity, filter, transform;
-      transition:opacity .18s linear, filter .18s linear, transform .18s linear;
-    }
-    .statement .muted{ color:var(--muted); font-weight:600; }
+/* Active layer count badge in sidebar header */
+.mside-layer-count {
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:9px;color:var(--muted);
+  margin-top:6px;
+}
+.mlc-dot { width:5px;height:5px;border-radius:50%; }
 
-    /* ── CTA doble ───────────────────────────────── */
-    .cta-block{
-      border-top:1px solid var(--line2);
-      border-bottom:1px solid var(--line2);
-      background:var(--bg);
-    }
-    .cta-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:32px 0; }
-    @media(max-width:900px){ .cta-grid{ grid-template-columns:1fr; } }
+/* Map overlay markers for urban layers */
+.urban-marker {
+  background:none !important;border:none !important;
+}
 
-    .cta{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:30px 28px; border-radius:16px;
-      font-family:var(--serif);
-      font-size:clamp(20px, 2.5vw, 28px);
-      font-weight:700; cursor:pointer;
-      border:1px solid var(--line);
-      transition:transform .12s ease, border-color .14s, box-shadow .14s;
-      user-select:none;
-    }
-    .cta.light{ background:var(--bg2); color:var(--text); }
-    .cta.dark{ background:var(--dark); color:#fff; border-color:rgba(255,255,255,.06); }
-    .cta-arrow{
-      width:38px; height:38px; border-radius:50%;
-      border:1px solid currentColor;
-      display:flex; align-items:center; justify-content:center;
-      opacity:.5; flex:0 0 auto;
-      transition:opacity .14s, transform .14s;
-    }
-    .cta:hover .cta-arrow{ opacity:.9; transform:translateX(3px); }
-    .cta:hover{ border-color:rgba(0,73,252,.28); transform:translateY(-2px); box-shadow:var(--shadow2); }
-    .cta.dark:hover{ border-color:rgba(0,73,252,.5); }
-    .cta:active{ transform:translateY(0); }
+/* Traffic flow polyline pulse */
+@keyframes traffic-pulse {
+  0%,100% { opacity:.6; }
+  50%      { opacity:1;  }
+}
 
-    /* ── Precios ─────────────────────────────────── */
-    .price-tag{
-      font-family:var(--mono); font-size:18px; font-weight:500;
-      color:var(--text); margin:14px 0 0 0; letter-spacing:-.2px;
-    }
-    .card.featured{
-      border-color:var(--blueL2);
-      background:linear-gradient(160deg, rgba(0,73,252,.05) 0%, var(--panel) 50%);
-      box-shadow:0 4px 24px rgba(0,73,252,.12);
-    }
-    .card.featured:hover{ box-shadow:0 10px 36px rgba(0,73,252,.18); }
+/* Lighting marker glow ring */
+@keyframes light-glow {
+  0%,100% { box-shadow:0 0 6px 2px rgba(255,235,59,.4); }
+  50%      { box-shadow:0 0 14px 6px rgba(255,235,59,.7); }
+}
 
-    /* ── Footer ──────────────────────────────────── */
-    footer.footer{
-      background:var(--dark3);
-      border-top:1px solid rgba(255,255,255,.06);
-      padding:72px 0 44px; font-size:13.5px;
-      color:rgba(255,255,255,.55);
-    }
+/* Sensor ping animation */
+@keyframes sensor-ping {
+  0%   { transform:scale(1);  opacity:.9; }
+  70%  { transform:scale(2.2);opacity:0;  }
+  100% { transform:scale(2.2);opacity:0;  }
+}
 
-    .footer-brand{ display:flex; align-items:center; gap:10px; margin-bottom:48px; }
-    .footer-brand-name{ font-weight:800; font-size:15px; color:#fff; font-family:var(--serif); }
-    .footer-brand-sub{ font-size:11px; color:rgba(255,255,255,.4); font-weight:400; font-family:var(--sans); }
+/* Tooltip for urban layers */
+.leaflet-tooltip {
+  background:rgba(8,13,26,.92) !important;
+  border:1px solid var(--border2) !important;
+  color:var(--text) !important;
+  font-family:var(--mono) !important;
+  font-size:10px !important;
+  border-radius:3px !important;
+  box-shadow:none !important;
+  padding:4px 10px !important;
+}
+.leaflet-tooltip::before { display:none !important; }
 
-    .footer-grid{
-      display:grid; grid-template-columns:repeat(4,1fr);
-      gap:48px; border-top:1px solid rgba(255,255,255,.07);
-      padding-top:40px;
-    }
+/* Layer info panel — appears bottom of map sidebar on layer click */
+.layer-info-panel {
+  margin:8px 12px;background:rgba(255,255,255,.03);
+  border:1px solid var(--border);border-radius:var(--r);
+  padding:10px 12px;font-family:var(--mono);font-size:9px;
+  line-height:1.8;color:var(--muted);
+  transition:opacity .2s;
+}
+.lip-title { color:var(--text);font-size:10px;margin-bottom:4px; }
 
-    footer.footer h4{
-      margin:0 0 14px 0; font-size:11px;
-      letter-spacing:.8px; color:rgba(255,255,255,.35);
-      font-weight:600; text-transform:uppercase;
-      font-family:var(--mono);
-    }
-    footer.footer ul{ list-style:none; padding:0; margin:0; }
-    footer.footer li{ margin:9px 0; }
-    footer.footer a{ color:rgba(255,255,255,.62); font-weight:400; transition:color .12s; }
-    footer.footer a:hover{ color:#fff; }
+/* HUD topbar active layers pill */
+.hud-layers-pill {
+  display:flex;align-items:center;gap:4px;
+  font-family:var(--mono);font-size:9px;color:var(--muted);
+}
+.hlp-swatch { width:6px;height:6px;border-radius:50%; }
 
-    .footer-bottom{
-      margin-top:56px; padding-top:24px;
-      border-top:1px solid rgba(255,255,255,.07);
-      display:flex; justify-content:space-between;
-      align-items:center; flex-wrap:wrap; gap:16px;
-      color:rgba(255,255,255,.28); font-size:12px;
-      font-family:var(--mono);
-    }
-    .footer-locations{ display:flex; gap:12px; flex-wrap:wrap; letter-spacing:.4px; }
-    .footer-locations span{
-      cursor:default; padding:3px 8px; border-radius:999px;
-      border:1px solid rgba(0,73,252,.28); font-size:11px;
-      color:rgba(0,73,252,.7);
-    }
+/* ═══════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+   AI MODE TOGGLE — nav button + global state system
+═══════════════════════════════════════════════════════ */
 
-    @media(max-width:900px){ .footer-grid{ grid-template-columns:1fr 1fr; } }
-    @media(max-width:520px){ .footer-grid{ grid-template-columns:1fr; } }
+/* Nav AI button */
+.ai-toggle-btn {
+  display:flex; align-items:center; gap:8px;
+  padding:6px 14px;
+  border-radius:3px;
+  font-family:var(--mono); font-size:10px; letter-spacing:.08em;
+  text-transform:uppercase; cursor:pointer;
+  border:1px solid rgba(0,230,118,.35);
+  background:rgba(0,230,118,.07);
+  color:var(--green);
+  transition:all .2s; position:relative; overflow:hidden;
+  flex-shrink:0;
+}
+.ai-toggle-btn::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(90deg,transparent,rgba(0,230,118,.08),transparent);
+  transform:translateX(-100%); transition:transform .5s;
+}
+.ai-toggle-btn:hover::before { transform:translateX(100%); }
+.ai-toggle-btn:hover { border-color:var(--green); background:rgba(0,230,118,.12); }
+.ai-toggle-btn.ai-off {
+  border-color:var(--border); background:rgba(255,255,255,.02);
+  color:var(--muted);
+}
+.ai-toggle-btn.ai-off:hover { border-color:var(--border2); color:var(--text); }
+.ai-btn-dot {
+  width:6px; height:6px; border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 6px var(--green);
+  animation:blink 2s infinite; flex-shrink:0;
+}
+.ai-toggle-btn.ai-off .ai-btn-dot {
+  background:var(--muted); box-shadow:none; animation:none;
+}
+.ai-btn-label { white-space:nowrap; }
 
-    /* ── Contacto ────────────────────────────────── */
-    .contact-row{
-      display:grid; grid-template-columns:1fr 1fr;
-      gap:14px; margin-top:20px;
-    }
-    @media(max-width:980px){ .contact-row{ grid-template-columns:1fr; } }
+/* Nav divider */
+.nav-divider { width:1px; height:20px; background:var(--border); flex-shrink:0; margin:0 6px; }
 
-    .link{
-      color:var(--blue);
-      text-decoration:underline;
-      text-decoration-color:rgba(0,73,252,.3);
-      text-underline-offset:3px; font-weight:600;
-    }
-    .link:hover{ text-decoration-color:var(--blue); }
+/* ── AI MODE MODAL ── */
+.ai-modal-overlay {
+  position:fixed; inset:0; z-index:9500;
+  background:rgba(4,7,15,.85); backdrop-filter:blur(8px);
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none;
+  transition:opacity .25s ease;
+}
+.ai-modal-overlay.open { opacity:1; pointer-events:auto; }
 
-    .email-template{
-      font-family:var(--mono); font-size:12.5px; line-height:1.7;
-      white-space:pre-wrap; background:var(--bg2);
-      border:1px solid var(--line); border-radius:12px;
-      padding:16px; color:var(--muted); margin-top:14px;
-    }
+.ai-modal {
+  background:var(--panel); border:1px solid var(--border2);
+  width:480px; max-width:92vw;
+  transform:translateY(12px) scale(.97);
+  transition:transform .25s ease;
+  overflow:hidden; position:relative;
+}
+.ai-modal-overlay.open .ai-modal { transform:translateY(0) scale(1); }
 
-    /* ── Toast ───────────────────────────────────── */
-    .toast{
-      position:fixed; bottom:28px; left:50%;
-      transform:translateX(-50%) translateY(16px);
-      background:var(--dark); color:#fff;
-      padding:10px 18px; border-radius:999px;
-      font-size:13px; font-weight:600;
-      box-shadow:var(--shadow); z-index:9990;
-      opacity:0; pointer-events:none;
-      transition:opacity .2s ease, transform .2s ease;
-      white-space:nowrap; font-family:var(--sans);
-    }
-    .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
-  </style>
+.ai-modal-head {
+  padding:18px 22px 14px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:flex-start; justify-content:space-between;
+}
+.ai-modal-title {
+  font-family:var(--cond); font-size:18px; font-weight:700;
+  letter-spacing:.04em; color:#fff;
+}
+.ai-modal-sub {
+  font-family:var(--mono); font-size:9px; color:var(--muted);
+  letter-spacing:.06em; margin-top:3px;
+}
+.ai-modal-close {
+  background:none; border:1px solid var(--border);
+  border-radius:2px; padding:3px 9px;
+  font-family:var(--mono); font-size:10px; color:var(--muted);
+  cursor:pointer; transition:color .1s, border-color .1s; flex-shrink:0;
+}
+.ai-modal-close:hover { color:var(--text); border-color:var(--border2); }
+
+.ai-modal-body { padding:20px 22px; }
+
+/* Status indicator inside modal */
+.ai-status-block {
+  display:flex; align-items:center; gap:14px;
+  padding:14px 16px;
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  margin-bottom:18px;
+  background:rgba(255,255,255,.02);
+  transition:border-color .3s, background .3s;
+}
+.ai-status-block.active-state {
+  border-color:rgba(0,230,118,.3);
+  background:rgba(0,230,118,.04);
+}
+.ai-status-icon {
+  font-size:26px; flex-shrink:0;
+}
+.ai-status-text {}
+.ai-status-label {
+  font-family:var(--cond); font-size:16px; font-weight:700;
+  letter-spacing:.04em;
+}
+.ai-status-desc {
+  font-family:var(--mono); font-size:9px; color:var(--muted);
+  margin-top:3px; line-height:1.6;
+}
+
+/* Feature list */
+.ai-feature-list { display:flex; flex-direction:column; gap:6px; margin-bottom:18px; }
+.ai-feature-row {
+  display:flex; align-items:center; gap:10px;
+  padding:8px 12px; border:1px solid var(--border);
+  border-radius:var(--r); font-family:var(--mono); font-size:10px;
+  transition:opacity .3s, border-color .3s;
+}
+.ai-feature-row .afr-ico { font-size:14px; flex-shrink:0; width:20px; text-align:center; }
+.ai-feature-row .afr-name { flex:1; color:var(--text); }
+.ai-feature-row .afr-state {
+  font-size:9px; letter-spacing:.06em; padding:2px 7px;
+  border-radius:2px; flex-shrink:0;
+}
+.afr-state.on  { color:var(--green); background:var(--green-dim); }
+.afr-state.off { color:var(--muted); background:rgba(255,255,255,.03); }
+body.ai-disabled .ai-feature-row { opacity:.45; }
+body.ai-disabled .ai-feature-row .afr-state.on {
+  color:var(--muted); background:rgba(255,255,255,.03);
+}
+
+/* Big toggle button inside modal */
+.ai-big-toggle {
+  width:100%; padding:13px;
+  border:none; border-radius:var(--r);
+  font-family:var(--mono); font-size:11px; font-weight:600;
+  letter-spacing:.1em; text-transform:uppercase;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;
+  transition:background .2s, transform .08s;
+  position:relative; overflow:hidden;
+}
+.ai-big-toggle::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.08) 0%,transparent 60%);
+}
+.ai-big-toggle:active { transform:scale(.99); }
+.ai-big-toggle.enable  { background:var(--green); color:var(--black); }
+.ai-big-toggle.disable { background:rgba(255,255,255,.06); color:var(--muted); border:1px solid var(--border); }
+.ai-big-toggle.enable:hover  { background:#2fffa0; }
+.ai-big-toggle.disable:hover { background:rgba(255,255,255,.1); color:var(--text); }
+
+.ai-modal-footer {
+  padding:12px 22px 14px;
+  border-top:1px solid var(--border);
+  font-family:var(--mono); font-size:9px; color:var(--muted);
+  line-height:1.7;
+}
+
+/* ── GLOBAL AI-GATED ELEMENTS ── */
+
+/* Elements that require AI — shown when AI is ON */
+.ai-required { transition:opacity .3s, filter .3s; }
+body.ai-disabled .ai-required {
+  opacity:.3; pointer-events:none; filter:grayscale(.8);
+  cursor:not-allowed !important;
+}
+
+/* AI badge that appears on AI-powered features */
+.ai-badge {
+  display:inline-flex; align-items:center; gap:4px;
+  font-family:var(--mono); font-size:8px; letter-spacing:.06em;
+  padding:2px 7px; border-radius:2px;
+  background:rgba(0,230,118,.12); color:var(--green);
+  border:1px solid rgba(0,230,118,.25);
+  vertical-align:middle; margin-left:6px;
+}
+body.ai-disabled .ai-badge {
+  background:rgba(255,255,255,.04); color:var(--muted);
+  border-color:var(--border);
+}
+
+/* AI disabled overlay on gated sections */
+.ai-gate-wrap { position:relative; }
+.ai-gate-mask {
+  display:none; position:absolute; inset:0; z-index:10;
+  background:rgba(8,13,26,.75); backdrop-filter:blur(3px);
+  align-items:center; justify-content:center;
+  flex-direction:column; gap:8px;
+  font-family:var(--mono); font-size:10px; color:var(--muted);
+  border-radius:var(--r); text-align:center; padding:20px;
+  cursor:pointer;
+}
+body.ai-disabled .ai-gate-mask { display:flex; }
+.ai-gate-mask .agm-ico { font-size:28px; opacity:.5; }
+.ai-gate-mask .agm-txt { line-height:1.8; }
+.ai-gate-mask .agm-link {
+  font-size:9px; color:var(--green); letter-spacing:.06em;
+  border:1px solid rgba(0,230,118,.3); padding:3px 10px; border-radius:2px;
+  margin-top:4px; cursor:pointer;
+}
+
+/* ── ROUTE PANEL AI score label ── */
+.score-source-tag {
+  font-family:var(--mono); font-size:8px; letter-spacing:.04em;
+  color:var(--muted); margin-top:2px;
+}
+body.ai-disabled .score-source-tag { color:var(--ghost); }
+body.ai-disabled .score-source-tag::after { content:' (modo básico)'; }
+
+/* ── AI mode banner strip (below nav) ── */
+.ai-mode-banner {
+  position:fixed; top:var(--nav-h); left:0; right:0; z-index:7500;
+  height:0; overflow:hidden;
+  background:rgba(255,59,48,.08); border-bottom:1px solid rgba(255,59,48,.2);
+  display:flex; align-items:center; justify-content:center; gap:12px;
+  font-family:var(--mono); font-size:9px; color:rgba(255,100,80,.9);
+  letter-spacing:.06em; transition:height .3s ease;
+}
+body.ai-disabled .ai-mode-banner { height:28px; }
+body.ai-disabled .screens { top:calc(var(--nav-h) + 28px); }
+.ai-mode-banner .amb-dot {
+  width:5px; height:5px; border-radius:50%;
+  background:rgba(255,100,80,.8);
+}
+
+/* ═══════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════ */
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(6px);background:var(--raise);border:1px solid var(--border2);border-radius:3px;padding:8px 14px;font-family:var(--mono);font-size:10px;color:var(--text);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:9000;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
 </head>
-
 <body>
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <a class="skip" href="#contenido">Saltar al contenido</a>
 
-  <!-- Header/Nav -->
-  <header class="site-header" aria-label="Encabezado institucional">
-    <div class="wrap header-inner">
-      <a class="brand" aria-label="GeoRISK Consulting — inicio" href="#contenido">
-        <div class="mark" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M9 2L16 6V12L9 16L2 12V6L9 2Z" stroke="rgba(255,255,255,.9)" stroke-width="1.4" fill="none"/>
-            <circle cx="9" cy="9" r="2.2" fill="rgba(255,255,255,.85)"/>
-          </svg>
-        </div>
-        <div class="brand-text">
-          <span class="brand-name">GeoRISK Consulting</span>
-          <span class="brand-sub">Riesgo, datos y operación</span>
-        </div>
-      </a>
-      <nav class="topnav" aria-label="Navegación principal">
-        <a href="#servicios">Servicios</a>
-        <a href="#metodo">Método</a>
-        <a href="#entregables">Entregables</a>
-        <a href="#gobernanza">Gobernanza</a>
-        <a href="#precios">Precios</a>
-        <a href="#contacto">Contacto</a>
-      </nav>
+<!-- ════════════════════════════════════════
+     TOP NAV
+════════════════════════════════════════ -->
+<nav class="topnav">
+  <div class="nav-brand" onclick="goScreen('home')">
+    <div class="nav-brand-icon">⬡</div>
+    GeoRISK <span class="acc">Navigator</span>
+  </div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" data-screen="home" onclick="goScreen('home')"><span class="tab-ico">◈</span>HOME</div>
+    <div class="nav-tab" data-screen="map" onclick="goScreen('map')"><span class="tab-ico">◉</span>MAPA</div>
+    <div class="nav-tab" data-screen="routes" onclick="goScreen('routes')"><span class="tab-ico">⟶</span>ANÁLISIS DE RUTA</div>
+    <div class="nav-tab" data-screen="dashboard" onclick="goScreen('dashboard')"><span class="tab-ico">▦</span>DASHBOARD</div>
+    <div class="nav-tab" data-screen="reports" onclick="goScreen('reports')"><span class="tab-ico">⬗</span>REPORTES</div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-divider"></div>
+    <button class="ai-toggle-btn" id="aiNavBtn" onclick="openAIModal()">
+      <div class="ai-btn-dot"></div>
+      <span class="ai-btn-label">IA ACTIVA</span>
+    </button>
+    <div class="nav-divider"></div>
+    <div class="nav-status"><div class="status-dot"></div>SISTEMA ACTIVO</div>
+  </div>
+</nav>
+
+<!-- AI disabled banner -->
+<div class="ai-mode-banner">
+  <div class="amb-dot"></div>
+  MODO SIN IA — Los scores de riesgo usan algoritmo determinista. Análisis avanzado desactivado.
+  <div class="amb-dot"></div>
+  <span style="cursor:pointer;color:rgba(255,180,160,.9);border-bottom:1px solid rgba(255,100,80,.4)" onclick="openAIModal()">Activar IA →</span>
+</div>
+
+<div class="screens">
+
+<!-- ════════════════════════════════════════
+     AI MODE MODAL
+════════════════════════════════════════ -->
+<div class="ai-modal-overlay" id="aiModalOverlay" onclick="closeAIModalOutside(event)">
+  <div class="ai-modal" id="aiModal">
+    <div class="ai-modal-head">
+      <div>
+        <div class="ai-modal-title">⬡ MODO DE INTELIGENCIA ARTIFICIAL</div>
+        <div class="ai-modal-sub">CONFIGURACIÓN · PRIVACIDAD · FUNCIONES AFECTADAS</div>
+      </div>
+      <button class="ai-modal-close" onclick="closeAIModal()">✕ CERRAR</button>
     </div>
-  </header>
 
-  <!-- Rail -->
-  <section class="rail" aria-label="Índice institucional por secciones">
-    <div class="wrap rail-inner">
-      <div class="chip-scroll" aria-label="Secciones (scroll horizontal)">
-        <div class="chip-row" role="list">
-          <a class="chip" role="listitem" href="#servicios">Servicios</a>
-          <a class="chip" role="listitem" href="#metodo">Método</a>
-          <a class="chip" role="listitem" href="#entregables">Entregables</a>
-          <a class="chip" role="listitem" href="#gobernanza">Gobernanza</a>
-          <a class="chip" role="listitem" href="#precios">Precios</a>
-          <a class="chip" role="listitem" href="#contacto">Contacto</a>
+    <div class="ai-modal-body">
+
+      <!-- Status block -->
+      <div class="ai-status-block" id="aiStatusBlock">
+        <div class="ai-status-icon" id="aiStatusIcon">🤖</div>
+        <div class="ai-status-text">
+          <div class="ai-status-label" id="aiStatusLabel">IA ACTIVA</div>
+          <div class="ai-status-desc" id="aiStatusDesc">
+            El motor de inteligencia artificial está habilitado.<br>
+            Los scores de riesgo usan el modelo Random Forest + análisis contextual.
+          </div>
         </div>
       </div>
-      <div class="fade-left" aria-hidden="true"></div>
-      <div class="fade-right" aria-hidden="true"></div>
-      <div class="rail-cta">
-        <button class="btn ghost" type="button" id="btnIndice" aria-label="Volver al inicio de la página">↑ Inicio</button>
+
+      <!-- Affected features -->
+      <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Funciones afectadas</div>
+      <div class="ai-feature-list">
+        <div class="ai-feature-row">
+          <div class="afr-ico">⟶</div>
+          <div class="afr-name">Score de riesgo por ruta (0–100)</div>
+          <div class="afr-state on" id="feat-route">ACTIVO</div>
+        </div>
+        <div class="ai-feature-row">
+          <div class="afr-ico">◉</div>
+          <div class="afr-name">Análisis ML de incidentes por punto</div>
+          <div class="afr-state on" id="feat-ml">ACTIVO</div>
+        </div>
+        <div class="ai-feature-row">
+          <div class="afr-ico">▦</div>
+          <div class="afr-name">KPIs dinámicos del dashboard</div>
+          <div class="afr-state on" id="feat-dash">ACTIVO</div>
+        </div>
+        <div class="ai-feature-row">
+          <div class="afr-ico">⬗</div>
+          <div class="afr-name">Análisis ejecutivo en reportes PDF</div>
+          <div class="afr-state on" id="feat-rep">ACTIVO</div>
+        </div>
+        <div class="ai-feature-row">
+          <div class="afr-ico">🌙</div>
+          <div class="afr-name">Ajuste de riesgo por franja horaria</div>
+          <div class="afr-state on" id="feat-time">ACTIVO</div>
+        </div>
+      </div>
+
+      <!-- Privacy note -->
+      <div style="background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;margin-bottom:14px;font-family:var(--mono);font-size:9px;color:var(--muted);line-height:1.8">
+        <span style="color:var(--text)">🔒 PRIVACIDAD</span><br>
+        En esta versión prototipo, el motor de IA corre localmente en el navegador.<br>
+        En producción con API externa, los datos de coordenadas se enviarían al servidor de análisis.<br>
+        Desactivar la IA garantiza que <span style="color:var(--green)">ningún dato se envía fuera del dispositivo</span>.
+      </div>
+
+      <!-- Big toggle -->
+      <button class="ai-big-toggle disable" id="aiBigToggle" onclick="toggleAIMode()">
+        <span id="aiBigToggleLbl">⊘ DESACTIVAR INTELIGENCIA ARTIFICIAL</span>
+      </button>
+    </div>
+
+    <div class="ai-modal-footer">
+      Sin IA: los scores usan el algoritmo determinista (suma ponderada de incidentes por proximidad).<br>
+      La visualización del mapa, capas urbanas y análisis de rutas básico siguen funcionando con normalidad.
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCREEN 1 — HOME / LANDING
+════════════════════════════════════════ -->
+<div class="screen active" id="s-home">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-tag">⬡ PLATAFORMA DE INTELIGENCIA TERRITORIAL</div>
+      <div class="hero-title">
+        GEO<span class="g">RISK</span>
+        <span class="d">WAZE FOR CRIMINAL RISK</span>
+      </div>
+      <p class="hero-sub">Plataforma de análisis de riesgo operacional para logística. Optimiza rutas de despacho minimizando exposición a zonas de alta incidencia criminal en tiempo real.</p>
+      <div class="hero-cta">
+        <button class="btn-p" onclick="goScreen('routes')">▶ ANALIZAR RUTAS</button>
+        <button class="btn-s" onclick="goScreen('map')">⬡ VER MAPA LIVE</button>
+      </div>
+      <div class="hero-stats">
+        <div><div class="stat-val">500<span class="u">+</span></div><div class="stat-lbl">INCIDENTES INDEXADOS</div></div>
+        <div><div class="stat-val">3<span class="u">x</span></div><div class="stat-lbl">VARIANTES DE RUTA</div></div>
+        <div><div class="stat-val">98<span class="u">%</span></div><div class="stat-lbl">COBERTURA CDMX</div></div>
       </div>
     </div>
-  </section>
 
-  <main id="contenido" aria-label="Contenido principal">
+    <!-- Animated map preview -->
+    <div class="hero-right">
+      <div class="map-bg"></div>
+      <div class="map-vignette"></div>
+      <div class="scan-line"></div>
 
-    <!-- Intro -->
-    <section class="intro-section" aria-label="Presentación institucional">
-      <div class="wrap">
-        <div class="block-inner">
-          <p class="section-label">Unidad de análisis aplicada</p>
-          <p class="section-sub">
-            GeoRISK opera como una unidad de análisis aplicada: define alcance, integra insumos,
-            produce entregables y documenta supuestos y limitaciones para uso interno (operación, control, auditoría).
-          </p>
-          <div class="two" aria-label="Marco de trabajo">
-            <article class="card">
-              <span class="badge">Definición</span>
-              <p class="section-sub" style="margin-top:12px">
-                Análisis territorial y temporal orientado a decisiones operativas. Enfoque en replicabilidad, trazabilidad y control de alcance.
-              </p>
-              <ul class="clean">
-                <li>Unidad de análisis por zona / ruta / ventana temporal</li>
-                <li>Entregables consistentes para circulación interna</li>
-                <li>Documentación de supuestos y límites</li>
-              </ul>
-            </article>
-            <article class="card">
-              <span class="badge">Límites operativos</span>
-              <p class="section-sub" style="margin-top:12px">
-                Se entregan insumos técnicos; no se sustituyen funciones internas de seguridad, custodia ni representación legal.
-              </p>
-              <ul class="clean">
-                <li>No vigilancia / custodia</li>
-                <li>No asesoría jurídica</li>
-                <li>Recomendaciones contextualizadas para decisión interna</li>
-              </ul>
-            </article>
-          </div>
-          <div class="note" role="note">
-            <b>Nota técnica:</b> la navegación superior y el rail están diseñados para lectura tipo "documento institucional": acceso rápido, estado activo por sección y mapa corporativo al final.
-          </div>
+      <!-- Heat blobs -->
+      <div class="heatblob" style="width:180px;height:180px;background:rgba(255,61,61,.45);top:20%;left:15%;animation-delay:0s"></div>
+      <div class="heatblob" style="width:140px;height:140px;background:rgba(255,171,0,.4);top:50%;left:40%;animation-delay:1.5s"></div>
+      <div class="heatblob" style="width:100px;height:100px;background:rgba(255,61,61,.35);top:30%;left:60%;animation-delay:.8s"></div>
+      <div class="heatblob" style="width:160px;height:160px;background:rgba(255,171,0,.3);top:65%;left:10%;animation-delay:2s"></div>
+      <div class="heatblob" style="width:80px;height:80px;background:rgba(0,230,118,.25);top:15%;left:70%;animation-delay:.4s"></div>
+
+      <!-- Route SVG -->
+      <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 600 600">
+        <path d="M80,520 Q200,400 300,300 Q400,200 520,80" stroke="#ff3d3d" stroke-width="2.5" fill="none" stroke-dasharray="8 4" opacity=".6"/>
+        <path d="M80,520 Q150,350 300,300 Q450,250 520,80" stroke="#00e676" stroke-width="3" fill="none" opacity=".85"/>
+        <path d="M80,520 Q220,450 300,300 Q380,150 520,80" stroke="#ffab00" stroke-width="2" fill="none" stroke-dasharray="10 5" opacity=".5"/>
+        <circle cx="80" cy="520" r="6" fill="#00e676" opacity=".9"/>
+        <circle cx="80" cy="520" r="12" fill="none" stroke="#00e676" stroke-width="1" opacity=".4"/>
+        <circle cx="520" cy="80" r="6" fill="#ff3d3d" opacity=".9"/>
+        <circle cx="520" cy="80" r="12" fill="none" stroke="#ff3d3d" stroke-width="1" opacity=".4"/>
+      </svg>
+
+      <div class="map-panel-overlay mpo-top">
+        <span>CDMX · ZONA METROPOLITANA</span>
+        <span id="heroCoords">19.4326°N 99.1332°W</span>
+      </div>
+      <div class="map-panel-overlay mpo-legend">
+        <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>ALTO RIESGO</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--amber)"></div>RIESGO MEDIO</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>BAJO RIESGO</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--blue)"></div>RUTA ÓPTIMA</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="home-section dark">
+    <div class="sec-tag">MÓDULOS DE PLATAFORMA</div>
+    <div class="sec-title">CAPACIDADES</div>
+    <p class="sec-desc">Sistema integrado de inteligencia operacional para flotas de logística y organizaciones de seguridad.</p>
+    <div class="feat-grid">
+      <div class="feat-cell" onclick="goScreen('map')">
+        <div class="feat-n">01 — MAPA INTERACTIVO</div>
+        <div class="feat-ico">◉</div>
+        <div class="feat-t">Mapa de Riesgo Live</div>
+        <div class="feat-d">Heatmap en tiempo real con capas por tipo de crimen: robo, asalto, hurto, robo vehicular.</div>
+      </div>
+      <div class="feat-cell" onclick="goScreen('routes')">
+        <div class="feat-n">02 — ANÁLISIS DE RUTAS</div>
+        <div class="feat-ico">⟶</div>
+        <div class="feat-t">3 Variantes de Ruta</div>
+        <div class="feat-d">Compara Ruta Directa, Rodeo Norte y Rodeo Sur con score de riesgo ML (0–100) por cada opción.</div>
+      </div>
+      <div class="feat-cell" onclick="goScreen('dashboard')">
+        <div class="feat-n">03 — DASHBOARD</div>
+        <div class="feat-ico">▦</div>
+        <div class="feat-t">KPIs y Estadísticas</div>
+        <div class="feat-d">Distribución de incidentes por zona, hora y tipo. Tendencias temporales y análisis de hotspots.</div>
+      </div>
+      <div class="feat-cell" onclick="goScreen('reports')">
+        <div class="feat-n">04 — REPORTES PDF</div>
+        <div class="feat-ico">⬗</div>
+        <div class="feat-t">Reporte de Riesgo</div>
+        <div class="feat-d">Genera reportes PDF con snapshot de mapa, análisis de rutas e indicadores de riesgo.</div>
+      </div>
+      <div class="feat-cell">
+        <div class="feat-n">05 — ML ENGINE</div>
+        <div class="feat-ico">⬡</div>
+        <div class="feat-t">Random Forest Score</div>
+        <div class="feat-d">Modelo scikit-learn entrenado con datos históricos. Considera hora del día, día de semana y densidad zonal.</div>
+      </div>
+      <div class="feat-cell">
+        <div class="feat-n">06 — POSTPIS / API</div>
+        <div class="feat-ico">◈</div>
+        <div class="feat-t">Backend Geoespacial</div>
+        <div class="feat-d">Node.js + Express + PostGIS. ST_DWithin para consultas de buffer. API REST documentada.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Architecture -->
+  <div class="home-section">
+    <div class="sec-tag">STACK TÉCNICO</div>
+    <div class="sec-title">ARQUITECTURA</div>
+    <div class="arch-grid">
+      <div class="arch-diag">
+        <pre><span class="b">BROWSER</span> [:3000]
+  └── React 18 + TypeScript
+      Leaflet 1.9 · TailwindCSS
+      Axios · jsPDF
+           │ REST
+           ▼
+<span class="a">BACKEND</span> [:4000]
+  └── Node.js 20 + Express 4
+      Prisma ORM (TypeScript)
+           │
+           ├── <span class="r">ML SERVICE</span> [:8000]
+           │   └── Python 3.11
+           │       FastAPI · scikit-learn
+           │       POST /predict-risk
+           │
+           ▼
+<span class="g">POSTGRES 15</span> + PostGIS 3
+  ├── CrimeIncident (500 rows)
+  ├── Route
+  └── RouteIncident
+      ST_DWithin(geom, 100m)</pre>
+      </div>
+      <div class="svc-grid">
+        <div class="svc-card" data-port=":3000"><div class="svc-port">PORT 3000</div><div class="svc-ico">⬡</div><div class="svc-name">FRONTEND</div><div class="svc-tech">REACT 18 · TYPESCRIPT · EXPO</div><div class="svc-desc">SPA con Leaflet, rutas, dashboard y generador PDF.</div></div>
+        <div class="svc-card" data-port=":4000"><div class="svc-port">PORT 4000</div><div class="svc-ico">◈</div><div class="svc-name">BACKEND API</div><div class="svc-tech">NODE.JS 20 · EXPRESS 4</div><div class="svc-desc">REST API con rutas de análisis, incidentes y reportes.</div></div>
+        <div class="svc-card" data-port=":8000"><div class="svc-port">PORT 8000</div><div class="svc-ico">⬗</div><div class="svc-name">ML SERVICE</div><div class="svc-tech">PYTHON 3.11 · FASTAPI</div><div class="svc-desc">Random Forest Classifier. POST /predict-risk endpoint.</div></div>
+        <div class="svc-card" data-port=":5432"><div class="svc-port">PORT 5432</div><div class="svc-ico">▦</div><div class="svc-name">DATABASE</div><div class="svc-tech">POSTGRESQL 15 · POSTGIS 3</div><div class="svc-desc">Geometría espacial con ST_DWithin buffer queries.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="home-footer">
+    <div class="footer-brand">GEO<span class="acc">RISK</span> NAVIGATOR</div>
+    <div class="footer-info">MVP PROTOTYPE · CDMX DATA · docker-compose up</div>
+  </div>
+
+</div><!-- /s-home -->
+
+<!-- ════════════════════════════════════════
+     SCREEN 2 — MAP
+════════════════════════════════════════ -->
+<div class="screen" id="s-map">
+  <div class="map-layout">
+
+    <aside class="map-sidebar">
+      <div class="mside-head">
+        <div class="mside-title">URBAN LAYERS</div>
+        <div class="mside-sub">CDMX · 500 INC · 6 CAPAS DISPONIBLES</div>
+        <div class="mside-layer-count" id="activeLayerCount">
+          <div class="mlc-dot" style="background:var(--red)"></div><span id="riskLayerN">3</span> riesgo
+          &nbsp;·&nbsp;
+          <div class="mlc-dot" style="background:var(--blue)"></div><span id="ctxLayerN">0</span> contexto
         </div>
       </div>
-    </section>
+      <div class="mside-body">
 
-    <!-- Feature oscuro -->
-    <section class="feature" aria-label="Módulo editorial institucional">
-      <div class="wrap feature-inner">
-        <div>
-          <p class="meta">Marco operativo</p>
-          <h2 class="title">Análisis territorial para decisiones operativas y de control</h2>
+        <!-- ── GROUP 1: RISK LAYERS ── -->
+        <div class="layer-group-label risk">⚠ CAPAS DE RIESGO</div>
+        <div style="padding:0 12px 4px">
+
+          <div class="layer-row on" data-layer="robbery" data-group="risk" onclick="togMapLayer(this)">
+            <div class="lr-icon">🔴</div>
+            <div class="lr-swatch" style="background:#ff3d3d;box-shadow:0 0 5px #ff3d3d"></div>
+            <div class="lr-name">Crimen</div><div class="lr-count">500</div><div class="lr-sw"></div>
+          </div>
+
+          <div class="layer-row on" data-layer="traffic" data-group="risk" onclick="togMapLayer(this)">
+            <div class="lr-icon">🟠</div>
+            <div class="lr-swatch" style="background:#ff6b35;box-shadow:0 0 5px #ff6b35"></div>
+            <div class="lr-name">Tráfico</div><div class="lr-count">live</div><div class="lr-sw"></div>
+          </div>
+
+          <div class="layer-row on" data-layer="lighting" data-group="risk" onclick="togMapLayer(this)">
+            <div class="lr-icon">🟡</div>
+            <div class="lr-swatch" style="background:#ffeb3b;box-shadow:0 0 5px #ffeb3b"></div>
+            <div class="lr-name">Iluminación</div><div class="lr-count">déficit</div><div class="lr-sw"></div>
+          </div>
+
         </div>
-        <div class="actions" aria-label="Acciones del documento">
-          <button class="action" type="button" id="btnPdf" data-pdf-url="" title="Configura data-pdf-url cuando exista un PDF real">
-            <span class="pill">PDF</span>
-            <span>Documento</span>
+
+        <!-- ── GROUP 2: CONTEXT LAYERS ── -->
+        <div class="layer-group-label ctx">◈ CAPAS DE CONTEXTO</div>
+        <div style="padding:0 12px 8px">
+
+          <div class="layer-row ctx-layer" data-layer="restaurants" data-group="ctx" onclick="togMapLayer(this)">
+            <div class="lr-icon">🟢</div>
+            <div class="lr-swatch" style="background:#00e676"></div>
+            <div class="lr-name">Puntos Seguros</div><div class="lr-count">142</div><div class="lr-sw"></div>
+          </div>
+
+          <div class="layer-row ctx-layer" data-layer="transport" data-group="ctx" onclick="togMapLayer(this)">
+            <div class="lr-icon">🔵</div>
+            <div class="lr-swatch" style="background:#29b6f6"></div>
+            <div class="lr-name">Transporte</div><div class="lr-count">316</div><div class="lr-sw"></div>
+          </div>
+
+          <div class="layer-row ctx-layer" data-layer="sensors" data-group="ctx" onclick="togMapLayer(this)">
+            <div class="lr-icon">🟣</div>
+            <div class="lr-swatch" style="background:#9b6dff"></div>
+            <div class="lr-name">Sensores C5</div><div class="lr-count">89</div><div class="lr-sw"></div>
+          </div>
+
+        </div>
+
+        <!-- ── Layer info panel ── -->
+        <div class="layer-info-panel" id="layerInfo">
+          <div class="lip-title">URBAN LAYERS</div>
+          Activa o desactiva capas para componer la vista de riesgo urbano. Las capas de riesgo alimentan el score ML. Las capas de contexto proveen inteligencia operacional complementaria.
+        </div>
+
+        <!-- ── Zone stats ── -->
+        <div class="mside-section">
+          <div class="mside-lbl">ZONAS DE ALTO RIESGO</div>
+          <div id="zoneStats"></div>
+        </div>
+
+        <div class="mside-section">
+          <div class="mside-lbl">LEYENDA DE CAPAS</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted);line-height:2.1">
+            <span style="color:var(--red)">■</span> Crimen → heatmap densidad<br>
+            <span style="color:#ff6b35">■</span> Tráfico → flujo vial simulado<br>
+            <span style="color:#ffeb3b">■</span> Iluminación → déficit lumínico<br>
+            <span style="color:var(--green)">■</span> Puntos Seguros → gasolineras, hospitales<br>
+            <span style="color:var(--blue)">■</span> Transporte → metro, camión, CETRAM<br>
+            <span style="color:var(--violet)">■</span> Sensores C5 → cámaras y IoT
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <div style="flex:1;position:relative;">
+      <div id="leafmap"></div>
+      <div class="map-hud">
+        <div class="hud-corners">
+          <div class="hud-c tl"></div><div class="hud-c tr"></div>
+          <div class="hud-c bl"></div><div class="hud-c br"></div>
+        </div>
+        <div class="hud-topbar">
+          <div class="hud-live"><div class="hud-live-dot"></div>LIVE</div>
+          <div class="sep"></div><span>CDMX · <b>ZONA METROPOLITANA</b></span>
+          <div class="sep"></div><span>INC: <b>500</b></span>
+          <div class="sep"></div><span id="mapTime">HORA: <b>--:--</b></span>
+          <div class="sep"></div>
+          <div class="hud-layers-pill" id="hudLayerPills"></div>
+        </div>
+        <div class="hud-legend-map">
+          <div class="hleg-lbl">Densidad de riesgo</div>
+          <div class="hleg-bar"></div>
+          <div class="hleg-ends"><span>BAJO</span><span>ALTO</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /s-map -->
+
+<!-- ════════════════════════════════════════
+     SCREEN 3 — ROUTE ANALYSIS
+════════════════════════════════════════ -->
+<div class="screen" id="s-routes">
+  <div class="routes-layout">
+
+    <aside class="routes-panel">
+      <div class="rp-head">
+        <div class="rp-title">ANÁLISIS DE RUTA <span class="ai-badge" id="routeAiBadge">⬡ IA</span></div>
+        <div class="rp-sub">ML · RANDOM FOREST SCORER</div>
+      </div>
+      <div class="rp-body">
+        <div class="rp-section">
+          <div class="rp-lbl">PARÁMETROS</div>
+          <div class="field">
+            <div class="field-lbl"><div class="pip pip-g"></div>ORIGEN</div>
+            <input class="inp" id="rOrig" value="19.4326, -99.1332" placeholder="lat, lng"/>
+          </div>
+          <div class="field">
+            <div class="field-lbl"><div class="pip pip-r"></div>DESTINO</div>
+            <input class="inp" id="rDest" value="19.3584, -99.1312" placeholder="lat, lng"/>
+          </div>
+          <div class="field">
+            <div class="field-lbl">FECHA / HORA</div>
+            <input type="datetime-local" class="inp" id="rTime"/>
+          </div>
+          <button class="btn-analyze" id="btnAnalyze" onclick="runRouteAnalysis()">
+            <span class="anlbl">▶ EJECUTAR ANÁLISIS ML</span>
+            <div class="sp"></div>
           </button>
-          <button class="action" type="button" id="btnShare" title="Compartir enlace">
-            <span class="pill">↗</span>
-            <span>Compartir</span>
-          </button>
         </div>
-      </div>
-    </section>
-
-    <!-- Statement -->
-    <section class="statement" aria-label="Declaración institucional">
-      <div class="statement-inner" id="statementText">
-        <h2>
-          <span class="line">GeoRISK traduce exposición territorial y temporal</span>
-          <span class="line"><span class="muted">en criterios operativos replicables</span></span>
-          <span class="line">para organizaciones con responsabilidad institucional.</span>
-        </h2>
-      </div>
-    </section>
-
-    <!-- CTAs -->
-    <section class="cta-block" aria-label="Acciones institucionales">
-      <div class="wrap cta-grid">
-        <div class="cta light" id="ctaReunion" role="button" tabindex="0" aria-label="Coordinar reunión breve">
-          Coordinar reunión breve
-          <span class="cta-arrow" aria-hidden="true">→</span>
-        </div>
-        <div class="cta dark" id="ctaExplorar" role="button" tabindex="0" aria-label="Explorar metodología">
-          Explorar metodología
-          <span class="cta-arrow" aria-hidden="true">→</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- Servicios -->
-    <section id="servicios" class="block" aria-label="Servicios">
-      <div class="wrap">
-        <div class="block-inner">
-          <p class="section-label">Familias de servicio</p>
-          <h2>Servicios</h2>
-          <p class="section-sub">Servicios organizados por familias para facilitar contratación y coordinación interna. El enfoque se define por entregables y criterios de aceptación.</p>
-          <div class="two" role="list" aria-label="Familias de servicio">
-            <article class="card" role="listitem">
-              <span class="badge">Operación urbana</span>
-              <p class="section-sub" style="margin-top:12px">Lectura por zona/horario para priorizar decisiones operativas en puntos de operación.</p>
-              <ul class="clean">
-                <li>Diagnóstico territorial (zonas críticas y ventanas temporales)</li>
-                <li>Recomendaciones operativas por contexto</li>
-                <li>Informe ejecutivo utilizable por dirección / control</li>
-              </ul>
-            </article>
-            <article class="card" role="listitem">
-              <span class="badge">Logística</span>
-              <p class="section-sub" style="margin-top:12px">Priorización de tramos y ventanas de exposición para rutas y puntos de entrega.</p>
-              <ul class="clean">
-                <li>Lectura territorial de rutas y puntos</li>
-                <li>Alternativas operativas (sin promesas abiertas)</li>
-                <li>Síntesis para operación y seguimiento interno</li>
-              </ul>
-            </article>
-            <article class="card" role="listitem">
-              <span class="badge">Soporte técnico</span>
-              <p class="section-sub" style="margin-top:12px">Evidencia contextual y lectura territorial para uso interno de áreas legales / seguridad / compliance (sin sustituir al responsable).</p>
-              <ul class="clean">
-                <li>Informe técnico contextual</li>
-                <li>Anexos visuales orientados a comprensión</li>
-                <li>Trazabilidad de insumos y supuestos</li>
-              </ul>
-            </article>
-            <article class="card" role="listitem">
-              <span class="badge">Monitoreo</span>
-              <p class="section-sub" style="margin-top:12px">Seguimiento periódico por ventanas temporales definidas, con comparabilidad entre cortes.</p>
-              <ul class="clean">
-                <li>Actualizaciones por ciclo (semanal / mensual según alcance)</li>
-                <li>Indicadores acordados con el cliente</li>
-                <li>Registro de cambios (control interno)</li>
-              </ul>
-            </article>
+        <div class="rp-section">
+          <div class="res-header">
+            <div class="rp-lbl" style="margin-bottom:0;flex:1">RESULTADOS</div>
+            <button class="btn-clr" id="btnClrR" onclick="clearRoutes()">✕</button>
           </div>
-          <div class="note">
-            <b>Contratación:</b> se formaliza por alcance, entregables, tiempos y criterios. Esto reduce ambigüedad para procurement y auditoría interna.
+          <div style="height:8px"></div>
+          <div class="ai-gate-wrap">
+            <div class="ai-gate-mask" onclick="openAIModal()">
+              <div class="agm-ico">⬡</div>
+              <div class="agm-txt">El score ML de rutas<br>requiere IA activada</div>
+              <div class="agm-link">Activar IA →</div>
+            </div>
+            <div id="routeResults">
+              <div class="empty-state"><div class="empty-ico">⟶</div>Ingresa origen y destino.<br>El motor ML calculará 3 rutas<br>con score de riesgo 0–100.</div>
+            </div>
           </div>
         </div>
       </div>
-    </section>
+    </aside>
 
-    <!-- Método -->
-    <section id="metodo" class="block" aria-label="Método">
-      <div class="wrap">
-        <div class="block-inner">
-          <p class="section-label">Proceso estandarizado</p>
-          <h2>Método</h2>
-          <p class="section-sub">Proceso operativo estandarizado. El objetivo es producir documentos utilizables y comparables entre proyectos, sin depender de herramientas del cliente.</p>
-          <div class="two" aria-label="Etapas del proceso">
-            <article class="card">
-              <span class="badge">01 — Definición de alcance</span>
-              <ul class="clean">
-                <li>Objetivo y preguntas técnicas</li>
-                <li>Unidad de análisis (zona / ruta / caso) y ventana temporal</li>
-                <li>Insumos requeridos y restricciones</li>
-                <li>Entregables + criterios de aceptación</li>
-              </ul>
-            </article>
-            <article class="card">
-              <span class="badge">02 — Integración de insumos</span>
-              <ul class="clean">
-                <li>Validación mínima de consistencia</li>
-                <li>Normalización para comparabilidad</li>
-                <li>Registro de fuentes e insumos (trazabilidad)</li>
-              </ul>
-            </article>
-          </div>
-          <div class="two" style="margin-top:14px">
-            <article class="card">
-              <span class="badge">03 — Análisis y síntesis ejecutiva</span>
-              <ul class="clean">
-                <li>Patrones por zona / horario</li>
-                <li>Priorización de hallazgos operativos</li>
-                <li>Escenarios de exposición (si aplica)</li>
-                <li>Recomendaciones contextualizadas</li>
-              </ul>
-            </article>
-            <article class="card">
-              <span class="badge">04 — Entrega y control</span>
-              <ul class="clean">
-                <li>Documento ejecutivo + anexos cuando aplica</li>
-                <li>Sección explícita de supuestos y limitaciones</li>
-                <li>Versionado básico de entregables</li>
-              </ul>
-            </article>
-          </div>
-          <div class="note">
-            <b>Principio operativo:</b> se evita complejidad innecesaria. Se privilegia utilidad, reproducibilidad y control de alcance.
+    <div style="flex:1;position:relative;">
+      <div id="routemap"></div>
+      <div class="map-hud">
+        <div class="hud-corners"><div class="hud-c tl"></div><div class="hud-c tr"></div><div class="hud-c bl"></div><div class="hud-c br"></div></div>
+        <div class="hud-topbar" id="routeHUD" style="display:none">
+          <div class="hud-live"><div class="hud-live-dot"></div>ML ANALYSIS</div>
+          <div class="sep"></div>
+          <span id="rhHour">HORA: <b>—</b></span>
+          <div class="sep"></div>
+          <span id="rhBest">MEJOR RUTA: <b>—</b></span>
+        </div>
+        <div class="hud-legend-map">
+          <div class="hleg-lbl">Score de riesgo</div>
+          <div class="hleg-bar"></div>
+          <div class="hleg-ends"><span>BAJO</span><span>ALTO</span></div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="detail-panel" id="detailPanel">
+      <div class="dp-head"><div class="dp-t" id="dpT">—</div><div class="dp-s" id="dpS">Detalle</div></div>
+      <div class="dp-body" id="dpBody"></div>
+    </aside>
+
+  </div>
+</div><!-- /s-routes -->
+
+<!-- ════════════════════════════════════════
+     SCREEN 4 — DASHBOARD
+════════════════════════════════════════ -->
+<div class="screen" id="s-dashboard">
+  <div class="dash-body">
+
+    <!-- KPIs -->
+    <div class="ai-gate-wrap">
+      <div class="ai-gate-mask" style="border-radius:var(--r)" onclick="openAIModal()">
+        <div class="agm-ico">▦</div>
+        <div class="agm-txt">Los KPIs dinámicos<br>requieren IA activada</div>
+        <div class="agm-link">Activar IA →</div>
+      </div>
+      <div class="dash-top-row">
+      <div class="kpi-card" style="--kc:var(--red)">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--red)"></div>
+        <div class="kpi-label">INCIDENTES TOTALES</div>
+        <div class="kpi-value">500<span class="kpi-u" style="color:var(--red)">+</span></div>
+        <div class="kpi-sub"><span class="kpi-delta up">▲ 12%</span> vs mes anterior</div>
+      </div>
+      <div class="kpi-card">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--amber)"></div>
+        <div class="kpi-label">ZONAS DE ALTO RIESGO</div>
+        <div class="kpi-value">8<span class="kpi-u" style="color:var(--amber)">zonas</span></div>
+        <div class="kpi-sub"><span class="kpi-delta up">▲ 2</span> nuevas este mes</div>
+      </div>
+      <div class="kpi-card">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--green)"></div>
+        <div class="kpi-label">RUTAS ANALIZADAS</div>
+        <div class="kpi-value">1.2<span class="kpi-u" style="color:var(--green)">K</span></div>
+        <div class="kpi-sub"><span class="kpi-delta down">▼ 3%</span> vs semana pasada</div>
+      </div>
+      <div class="kpi-card">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--blue)"></div>
+        <div class="kpi-label">SCORE PROMEDIO</div>
+        <div class="kpi-value">42<span class="kpi-u" style="color:var(--blue)">/100</span></div>
+        <div class="kpi-sub"><span class="kpi-delta down">▼ 5pts</span> vs mes pasado</div>
+      </div>
+    </div><!-- /dash-top-row -->
+    </div><!-- /ai-gate-wrap -->
+
+    <!-- Mid row -->
+    <div class="dash-mid-row">
+      <div class="dash-card">
+        <div class="dash-card-head"><div class="dc-title">INCIDENTES POR ZONA</div><div class="dc-sub">TOP 8 · CDMX</div></div>
+        <div class="dc-body"><div class="bar-chart" id="zoneBarChart"></div></div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-head"><div class="dc-title">TIPO DE CRIMEN</div><div class="dc-sub">DISTRIBUCIÓN %</div></div>
+        <div class="dc-body">
+          <div class="donut-wrap">
+            <svg width="130" height="130" viewBox="0 0 130 130" id="donutSvg"></svg>
+            <div class="donut-legend" id="donutLegend"></div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- Entregables -->
-    <section id="entregables" class="block" aria-label="Entregables">
-      <div class="wrap">
-        <div class="block-inner">
-          <p class="section-label">Formatos estándar</p>
-          <h2>Entregables</h2>
-          <p class="section-sub">Formatos estandarizados para lectura ejecutiva y archivo interno. Los entregables finales dependen del alcance formalizado.</p>
-          <div class="two" aria-label="Formatos y compatibilidad">
-            <article class="card">
-              <span class="badge">Paquete ejecutivo</span>
-              <ul class="clean">
-                <li>Informe ejecutivo (PDF) con hallazgos y recomendaciones</li>
-                <li>Anexo metodológico (cuando aplica) para trazabilidad</li>
-                <li>Visuales de apoyo (mapas / series / diagramas)</li>
-                <li>Lista de supuestos, limitaciones y alcance</li>
-              </ul>
-              <div class="note">
-                <b>Control documental:</b> se distingue qué es insumo, qué es resultado y qué es interpretación.
-              </div>
-            </article>
-            <article class="card">
-              <span class="badge">Compatibilidad interna</span>
-              <ul class="clean">
-                <li>Lenguaje técnico e impersonal (lectura institucional)</li>
-                <li>Estructura consistente: objetivo → método → hallazgos → recomendaciones</li>
-                <li>Listo para circulación en operación / compliance / auditoría</li>
-                <li>Evita dependencias externas y plataformas no verificables</li>
-              </ul>
-            </article>
+    <!-- Bottom row -->
+    <div class="dash-bottom-row">
+      <div class="dash-card">
+        <div class="dash-card-head"><div class="dc-title">RIESGO POR HORA</div><div class="dc-sub">MAPA DE CALOR HORARIO</div></div>
+        <div class="dc-body">
+          <div class="hour-grid" id="hourGrid"></div>
+          <div class="hour-lbl-row" id="hourLabels"></div>
+        </div>
+      </div>
+      <div class="dash-card" style="grid-column:span 2">
+        <div class="dash-card-head"><div class="dc-title">HOTSPOTS CRÍTICOS</div><div class="dc-sub">RANKING DE ZONAS</div></div>
+        <div class="dc-body" style="padding:0">
+          <table class="htable">
+            <thead><tr><th>#</th><th>ZONA</th><th>INCIDENTES</th><th>TIPO DOMINANTE</th><th>NIVEL</th><th>SCORE</th></tr></thead>
+            <tbody id="hotspotTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /s-dashboard -->
+
+<!-- ════════════════════════════════════════
+     SCREEN 5 — REPORTS
+════════════════════════════════════════ -->
+<div class="screen" id="s-reports">
+  <div class="reports-body">
+    <div style="margin-bottom:20px">
+      <div class="sec-tag">GENERADOR DE REPORTES</div>
+      <div style="font-family:var(--cond);font-size:28px;font-weight:900;color:#fff;letter-spacing:-.5px">REPORTE DE RIESGO OPERACIONAL</div>
+    </div>
+    <div class="rep-layout">
+
+      <!-- Config -->
+      <div class="rep-config">
+        <div class="rep-card">
+          <div class="rep-card-head"><div class="rep-card-t">CONFIGURACIÓN</div><div class="rep-card-s">PARÁMETROS DEL REPORTE</div></div>
+          <div class="rep-card-body">
+            <div class="rep-field">
+              <div class="rep-field-l">TÍTULO DEL REPORTE</div>
+              <input class="rep-inp" id="repTitle" placeholder="Análisis de Riesgo Semanal" value="Análisis de Riesgo Semanal — CDMX"/>
+            </div>
+            <div class="rep-field">
+              <div class="rep-field-l">FECHA DE ANÁLISIS</div>
+              <input type="date" class="rep-inp" id="repDate"/>
+            </div>
+            <div class="rep-field">
+              <div class="rep-field-l">ZONA DE COBERTURA</div>
+              <select class="rep-select" id="repZone">
+                <option>Ciudad de México — Zona Centro</option>
+                <option>CDMX — Iztapalapa Sur</option>
+                <option>CDMX — Neza / Ecatepec</option>
+                <option>CDMX — Completa</option>
+              </select>
+            </div>
+            <div class="rep-field">
+              <div class="rep-field-l">ORGANIZACIÓN</div>
+              <input class="rep-inp" id="repOrg" placeholder="Nombre de la empresa" value="GeoRISK Consulting S.A. de C.V."/>
+            </div>
+          </div>
+        </div>
+
+        <div class="rep-card">
+          <div class="rep-card-head"><div class="rep-card-t">SECCIONES A INCLUIR</div></div>
+          <div class="rep-card-body">
+            <div class="check-list" id="checkList">
+              <div class="check-row checked" onclick="togCheck(this)"><div class="check-box">✓</div><div class="check-t">Mapa de riesgo con heatmap</div></div>
+              <div class="check-row checked" onclick="togCheck(this)"><div class="check-box">✓</div><div class="check-t">Análisis de 3 rutas</div></div>
+              <div class="check-row checked" onclick="togCheck(this)"><div class="check-box">✓</div><div class="check-t">Score de riesgo ML</div></div>
+              <div class="check-row checked" onclick="togCheck(this)"><div class="check-box">✓</div><div class="check-t">Distribución de incidentes</div></div>
+              <div class="check-row" onclick="togCheck(this)"><div class="check-box"></div><div class="check-t">Análisis por franja horaria</div></div>
+              <div class="check-row" onclick="togCheck(this)"><div class="check-box"></div><div class="check-t">Hotspots críticos</div></div>
+              <div class="check-row" onclick="togCheck(this)"><div class="check-box"></div><div class="check-t">Recomendaciones operativas</div></div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-gen" id="btnGen" onclick="generateReport()">
+          <span class="glbl">⬗ GENERAR REPORTE PDF <span class="ai-badge">⬡ IA</span></span>
+          <div class="gsp"></div>
+        </button>
+
+        <!-- AI-OFF fallback note -->
+        <div id="repAiOffNote" style="display:none;margin-top:8px;padding:10px 12px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:var(--r);font-family:var(--mono);font-size:9px;color:var(--muted);line-height:1.8">
+          ⚠ El análisis ejecutivo generado por IA no estará disponible.<br>
+          El reporte incluirá datos estadísticos básicos.
+          <span style="color:var(--green);cursor:pointer;display:inline-block;margin-top:4px;border-bottom:1px solid rgba(0,230,118,.3)" onclick="openAIModal()">Activar IA para análisis completo →</span>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="rep-preview">
+        <div class="rep-preview-head">
+          <div class="rpf-title">VISTA PREVIA DEL DOCUMENTO</div>
+          <div class="rpf-dots">
+            <div class="rpf-dot" style="background:#ff3d3d"></div>
+            <div class="rpf-dot" style="background:#ffab00"></div>
+            <div class="rpf-dot" style="background:#00e676"></div>
+          </div>
+        </div>
+        <div class="rep-doc" id="repDoc">
+          <div class="rdoc-header">
+            <div class="rdoc-logo">GEO<span class="acc">RISK</span> NAVIGATOR</div>
+            <div class="rdoc-meta" id="rdMeta">REPORTE GENERADO: <span id="rdDate">—</span> · ORG: <span id="rdOrg">—</span></div>
+          </div>
+          <div class="rdoc-section">
+            <div class="rdoc-sec-title">1. RESUMEN EJECUTIVO</div>
+            <div id="rdExec" style="font-size:10px;color:var(--muted);line-height:1.8">Configura los parámetros y presiona <strong style="color:var(--green)">GENERAR REPORTE</strong> para ver la vista previa del documento.</div>
+          </div>
+          <div class="rdoc-section" id="rdMapSection" style="display:none">
+            <div class="rdoc-sec-title">2. MAPA DE RIESGO</div>
+            <div class="rdoc-map-mock"><span style="position:relative;z-index:1">⬡ CDMX RISK HEATMAP · 500 INCIDENTES</span></div>
+          </div>
+          <div class="rdoc-section" id="rdRouteSection" style="display:none">
+            <div class="rdoc-sec-title">3. ANÁLISIS DE RUTAS</div>
+            <div class="rdoc-route-row" id="rdRoutes"></div>
+          </div>
+          <div class="rdoc-section" id="rdIndicSection" style="display:none">
+            <div class="rdoc-sec-title">4. INDICADORES DE RIESGO</div>
+            <div id="rdIndicators"></div>
+          </div>
+          <div class="rdoc-footer" id="rdFooter" style="display:none">
+            <span id="rdFootOrg">—</span>
+            <span style="color:var(--green)" id="rdFootDate">—</span>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- Gobernanza -->
-    <section id="gobernanza" class="block" aria-label="Gobernanza">
-      <div class="wrap">
-        <div class="block-inner">
-          <p class="section-label">Marco institucional</p>
-          <h2>Gobernanza</h2>
-          <p class="section-sub">Apartado institucional para clientes corporativos: define manejo de información, trazabilidad y límites del servicio. No se declaran certificaciones ni clientes sin evidencia verificable.</p>
-          <div class="two" aria-label="Políticas operativas">
-            <article class="card">
-              <span class="badge">Confidencialidad</span>
-              <ul class="clean">
-                <li>Minimización: se solicita solo lo necesario para el entregable</li>
-                <li>Separación por proyecto: insumos y resultados aislados por alcance</li>
-                <li>Canales de intercambio acordados con el cliente</li>
-                <li>NDA bajo requerimiento del cliente</li>
-              </ul>
-            </article>
-            <article class="card">
-              <span class="badge">Trazabilidad</span>
-              <ul class="clean">
-                <li>Registro de fuentes e insumos (públicos o provistos por el cliente con autorización)</li>
-                <li>Supuestos y criterios explícitos</li>
-                <li>Limitaciones documentadas en el entregable</li>
-                <li>Control básico de versiones</li>
-              </ul>
-            </article>
-          </div>
-          <div class="note">
-            <b>Límites:</b> GeoRISK no presta servicios de seguridad privada / custodia ni asesoría jurídica. El análisis se entrega como insumo técnico para decisión interna.
-          </div>
-        </div>
-      </div>
-    </section>
+    </div>
+  </div>
+</div><!-- /s-reports -->
 
-    <!-- Precios -->
-    <section id="precios" class="block" aria-label="Precios">
-      <div class="wrap">
-        <div class="block-inner">
-          <p class="section-label">Rangos orientativos</p>
-          <h2>Precios</h2>
-          <p class="section-sub">Rangos orientativos. Se cotiza por alcance y entregable, no por horas. El precio final se formaliza en propuesta por proyecto.</p>
-          <div class="two" aria-label="Rangos orientativos">
-            <article class="card">
-              <span class="badge">Nivel 1</span>
-              <p class="section-sub" style="margin-top:12px"><b>Ficha ejecutiva</b> (1 página). Lectura preliminar del entorno y riesgos prioritarios.</p>
-              <p class="price-tag">$500 – $1,500 MXN</p>
-            </article>
-            <article class="card">
-              <span class="badge">Nivel 2</span>
-              <p class="section-sub" style="margin-top:12px"><b>Diagnóstico básico</b>. Análisis territorial base + 1–2 visuales y síntesis operativa.</p>
-              <p class="price-tag">$5,000 – $8,000 MXN</p>
-            </article>
-            <article class="card featured">
-              <span class="badge">Nivel 3</span>
-              <p class="section-sub" style="margin-top:12px"><b>Diagnóstico integral</b>. Lectura espacial / temporal detallada + anexos cuando aplique.</p>
-              <p class="price-tag">$15,000 – $25,000 MXN</p>
-            </article>
-            <article class="card">
-              <span class="badge">Soporte técnico</span>
-              <p class="section-sub" style="margin-top:12px"><b>Informe técnico contextual</b> por caso / expediente (sin asesoría jurídica).</p>
-              <p class="price-tag">$8,000 – $30,000 MXN</p>
-            </article>
-          </div>
-          <div class="note">
-            <b>Transparencia:</b> rangos sujetos a volumen, ventana temporal y disponibilidad de insumos. Se define por escrito el alcance y los criterios de aceptación.
-          </div>
-        </div>
-      </div>
-    </section>
+</div><!-- /screens -->
+<div class="toast" id="toast"></div>
 
-    <!-- Contacto -->
-    <section id="contacto" class="block" aria-label="Contacto">
-      <div class="wrap">
-        <div class="block-inner">
-          <p class="section-label">Primer contacto</p>
-          <h2>Contacto</h2>
-          <p class="section-sub">Para coordinar una reunión breve, utilice los siguientes canales. Se recomienda no compartir información sensible en el primer contacto.</p>
-          <div class="contact-row" aria-label="Canales de contacto">
-            <article class="card">
-              <span class="badge">Canal principal</span>
-              <p class="section-sub" style="margin-top:12px">
-                Correo: <a class="link mono" href="mailto:georisk.consulting@gmail.com">georisk.consulting@gmail.com</a>
-              </p>
-              <ul class="clean">
-                <li>Modalidad: por proyecto (alcance + entregables)</li>
-                <li>NDA: bajo requerimiento del cliente</li>
-                <li>Intercambio de insumos: canal acordado con el cliente</li>
-              </ul>
-              <div class="note">
-                <b>Operativo:</b> al disponer de dominio corporativo, migrar a <span class="mono">contacto@tudominio.com</span>.
-              </div>
-            </article>
-            <article class="card">
-              <span class="badge">Solicitud rápida</span>
-              <div class="email-template">Asunto: Reunión breve / Alcance de proyecto – GeoRISK Consulting
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════ -->
+<script>
+// ─── Seeded RNG ─────────────────────────────────────────────
+function mkRng(s){let r=s>>>0;return()=>{r=(Math.imul(r,1664525)+1013904223)>>>0;return r/0x100000000;};}
 
-Buen día. Solicito coordinar una reunión de 15 minutos para revisar un posible alcance de trabajo (análisis territorial de riesgo y soporte técnico contextual).
-Agradezco compartir disponibilidad (día y hora) y el contexto general (zona/ruta/caso) sin incluir información sensible en este primer contacto.</div>
-              <p style="margin:14px 0 0 0; color:var(--muted); font-size:13.5px">
-                <a class="link" href="mailto:georisk.consulting@gmail.com?subject=Reuni%C3%B3n%20breve%20%2F%20Alcance%20de%20proyecto%20%E2%80%93%20GeoRISK%20Consulting&body=Buen%20d%C3%ADa.%20Solicito%20coordinar%20una%20reuni%C3%B3n%20de%2015%20minutos%20para%20revisar%20un%20posible%20alcance%20de%20trabajo%20(an%C3%A1lisis%20territorial%20de%20riesgo%20y%20soporte%20t%C3%A9cnico%20contextual).%0A%0AAgradezco%20compartir%20disponibilidad%20(d%C3%ADa%20y%20hora)%20y%20el%20contexto%20general%20(zona%2Fruta%2Fcaso)%20sin%20incluir%20informaci%C3%B3n%20sensible%20en%20este%20primer%20contacto.">
-                  Abrir correo con plantilla →
-                </a>
-              </p>
-              <div class="note">
-                <b>Disclaimer:</b> GeoRISK no presta servicios de seguridad privada / custodia ni asesoría jurídica.
-              </div>
-            </article>
-          </div>
-        </div>
-      </div>
-    </section>
+// ─── CDMX crime zones & incidents ────────────────────────────
+const ZONES=[
+  {name:'Tepito',lat:19.4436,lng:-99.1218,r:.019,w:4.3,inc:87},
+  {name:'Iztapalapa',lat:19.3647,lng:-99.0611,r:.024,w:3.9,inc:72},
+  {name:'Doctores',lat:19.4156,lng:-99.1503,r:.014,w:3.6,inc:65},
+  {name:'Guerrero',lat:19.4412,lng:-99.1405,r:.012,w:3.4,inc:58},
+  {name:'Buenavista',lat:19.4490,lng:-99.1502,r:.010,w:3.0,inc:45},
+  {name:'Neza',lat:19.4007,lng:-99.0167,r:.022,w:3.7,inc:68},
+  {name:'Venustiano C.',lat:19.4270,lng:-99.1042,r:.015,w:3.2,inc:52},
+  {name:'Peralvillo',lat:19.4510,lng:-99.1300,r:.011,w:3.5,inc:53},
+  {name:'Centro Hist.',lat:19.4328,lng:-99.1332,r:.018,w:3.1,inc:47},
+  {name:'Polanco',lat:19.4326,lng:-99.1952,r:.011,w:1.3,inc:12},
+  {name:'Coyoacán',lat:19.3490,lng:-99.1612,r:.014,w:1.5,inc:18},
+  {name:'Del Valle',lat:19.3900,lng:-99.1600,r:.013,w:1.8,inc:23},
+];
+const TYPES=['robbery','assault','theft','carjacking'];
+const TYPE_C={robbery:'#ff3d3d',assault:'#ffab00',theft:'#ffe600',carjacking:'#9b6dff'};
+const rng=mkRng(42);
+const INC=[];
+for(let i=0;i<500;i++){
+  const z=ZONES[Math.floor(rng()*ZONES.length)];
+  const a=rng()*Math.PI*2,rad=rng()*z.r;
+  INC.push({lat:z.lat+rad*Math.sin(a),lng:z.lng+rad*Math.cos(a),
+    type:TYPES[Math.floor(rng()*4)],sev:Math.min(5,Math.ceil(rng()*z.w)),
+    hour:Math.floor(rng()*24),zone:z.name});
+}
 
-    <!-- Footer -->
-    <footer class="footer" id="indice" aria-label="Índice corporativo y pie institucional">
-      <div class="wrap">
-        <div class="footer-brand">
-          <div class="mark" aria-hidden="true" style="width:32px;height:32px;border-radius:9px;">
-            <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-              <path d="M9 2L16 6V12L9 16L2 12V6L9 2Z" stroke="rgba(255,255,255,.9)" stroke-width="1.4" fill="none"/>
-              <circle cx="9" cy="9" r="2.2" fill="rgba(255,255,255,.85)"/>
-            </svg>
-          </div>
-          <div>
-            <div class="footer-brand-name">GeoRISK Consulting</div>
-            <div class="footer-brand-sub">Riesgo, datos y operación</div>
-          </div>
-        </div>
-        <div class="footer-grid" role="navigation" aria-label="Mapa del sitio">
-          <div>
-            <h4>Áreas de trabajo</h4>
-            <ul>
-              <li><a href="#servicios">Análisis territorial</a></li>
-              <li><a href="#servicios">Riesgo operativo</a></li>
-              <li><a href="#gobernanza">Seguridad institucional</a></li>
-              <li><a href="#metodo">Inteligencia aplicada</a></li>
-              <li><a href="#metodo">Planeación estratégica</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4>Casos de aplicación</h4>
-            <ul>
-              <li><a href="#servicios">Gobierno</a></li>
-              <li><a href="#servicios">Infraestructura crítica</a></li>
-              <li><a href="#servicios">Energía</a></li>
-              <li><a href="#servicios">Servicios financieros</a></li>
-              <li><a href="#servicios">Entornos urbanos</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4>Capacidades</h4>
-            <ul>
-              <li><a href="#metodo">Modelos predictivos</a></li>
-              <li><a href="#metodo">Integración de datos</a></li>
-              <li><a href="#metodo">Análisis geoespacial</a></li>
-              <li><a href="#metodo">Evaluación de escenarios</a></li>
-              <li><a href="#metodo">Monitoreo continuo</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4>Documentación</h4>
-            <ul>
-              <li><a href="#metodo">Metodología</a></li>
-              <li><a href="#gobernanza">Gobernanza de datos</a></li>
-              <li><a href="#gobernanza">Ética y responsabilidad</a></li>
-              <li><a href="#contacto" title="Próximamente disponible">Aviso de privacidad</a></li>
-              <li><a href="#contacto" title="Próximamente disponible">Términos de uso</a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="footer-bottom" aria-label="Legal">
-          <div>© <span id="year"></span> GeoRISK Consulting. Todos los derechos reservados.</div>
-          <div class="footer-locations" aria-label="Regiones de operación">
-            <span>MX</span><span>LATAM</span><span>US</span><span>EU</span>
-          </div>
-        </div>
-      </div>
-    </footer>
-  </main>
+// ─── SCREEN NAVIGATION ────────────────────────────────────────
+let currentScreen='home';
+let mapInited=false, routeMapInited=false;
 
-  <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
+function goScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.toggle('active',t.dataset.screen===id));
+  document.getElementById('s-'+id).classList.add('active');
+  currentScreen=id;
+  if(id==='map'&&!mapInited){initLeafMap();mapInited=true;}
+  if(id==='routes'&&!routeMapInited){initRouteMap();routeMapInited=true;}
+  if(id==='dashboard'){renderDash();}
+}
 
-    const header = document.querySelector('header.site-header');
-    function syncHeaderH(){
-      document.documentElement.style.setProperty('--headerH', (header?.offsetHeight ?? 72) + 'px');
-    }
-    window.addEventListener('resize', syncHeaderH);
-    syncHeaderH();
+// ─── MAP SCREEN — URBAN LAYERS ENGINE ───────────────────────
+let leafMap, leafHeat;
 
-    const sentinel = document.createElement('div');
-    sentinel.style.cssText = 'position:absolute;top:0;height:1px;width:1px;pointer-events:none;';
-    document.body.prepend(sentinel);
-    new IntersectionObserver(([e]) => header.classList.toggle('scrolled', !e.isIntersecting), { threshold:1 }).observe(sentinel);
+// Layer state: risk layers ON by default, context layers OFF
+const LAYER_STATE = {
+  robbery:     { on:true,  group:'risk', color:'#ff3d3d', label:'Crimen'        },
+  traffic:     { on:true,  group:'risk', color:'#ff6b35', label:'Tráfico'       },
+  lighting:    { on:true,  group:'risk', color:'#ffeb3b', label:'Iluminación'   },
+  restaurants: { on:false, group:'ctx',  color:'#00e676', label:'Puntos Seguros'},
+  transport:   { on:false, group:'ctx',  color:'#29b6f6', label:'Transporte'    },
+  sensors:     { on:false, group:'ctx',  color:'#9b6dff', label:'Sensores C5'   },
+};
 
-    // Chips activos
-    document.querySelectorAll('.chip-row .chip').forEach(chip => {
-      const id = (chip.getAttribute('href') || '').replace('#','');
-      const sec = document.getElementById(id);
-      if(!sec) return;
-      new IntersectionObserver(entries => {
-        entries.forEach(e => chip.classList.toggle('active', e.isIntersecting));
-      }, { threshold:0.3, rootMargin:'-5% 0px -5% 0px' }).observe(sec);
+// Leaflet layer groups keyed by layer id
+const MAP_LAYERS = {};
+
+// ── Seed data for urban layers ────────────────────────────────
+const rngU = mkRng(99);
+
+// Traffic segments: random polylines of 3–5 pts around CDMX corridors
+const TRAFFIC_CORRIDORS = [
+  {pts:[[19.455,-99.17],[19.445,-99.16],[19.435,-99.14],[19.425,-99.13]],intensity:.85,name:'Periférico Norte'},
+  {pts:[[19.432,-99.133],[19.42,-99.12],[19.41,-99.11],[19.40,-99.10]],intensity:.7,name:'Eje Central'},
+  {pts:[[19.442,-99.200],[19.438,-99.185],[19.432,-99.170],[19.428,-99.155]],intensity:.5,name:'Paseo de Reforma'},
+  {pts:[[19.415,-99.155],[19.410,-99.140],[19.405,-99.125],[19.400,-99.110]],intensity:.9,name:'Insurgentes Sur'},
+  {pts:[[19.460,-99.130],[19.450,-99.120],[19.440,-99.110],[19.430,-99.100]],intensity:.6,name:'Av. Eduardo Molina'},
+  {pts:[[19.420,-99.080],[19.415,-99.070],[19.408,-99.060],[19.400,-99.050]],intensity:.75,name:'Viaducto Tlalpan'},
+];
+
+// Lighting deficit zones: circles where illumination is poor (high risk factor)
+const LIGHTING_ZONES = [];
+for(let i=0;i<60;i++){
+  const z=ZONES[Math.floor(rngU()*ZONES.length)];
+  const a=rngU()*Math.PI*2, rad=rngU()*z.r*.8;
+  LIGHTING_ZONES.push({
+    lat:z.lat+rad*Math.sin(a), lng:z.lng+rad*Math.cos(a),
+    radius:60+rngU()*120, deficit:rngU()>.5?'alto':'medio',
+    zone:z.name
+  });
+}
+
+// Safe stops: gas stations, hospitals, convenience stores
+const SAFE_SPOTS = [];
+const safeTypes=[
+  {t:'⛽ Gasolinera',c:'#00e676'},{t:'🏥 Hospital',c:'#00bcd4'},
+  {t:'🏪 OXXO 24h',c:'#69f0ae'},{t:'👮 Módulo Policía',c:'#00e676'},
+];
+const safeSeeds=[[19.435,-99.195],[19.422,-99.168],[19.448,-99.133],[19.398,-99.152],
+  [19.411,-99.117],[19.461,-99.148],[19.381,-99.133],[19.443,-99.087],
+  [19.402,-99.068],[19.420,-99.200],[19.390,-99.175],[19.455,-99.110]];
+safeSeeds.forEach((s,i)=>{
+  const st=safeTypes[i%safeTypes.length];
+  SAFE_SPOTS.push({lat:s[0]+rngU()*.003,lng:s[1]+rngU()*.003,type:st.t,color:st.c});
+});
+
+// Transport nodes: metro stations + CETRAM
+const TRANSPORT_NODES = [
+  {lat:19.4300,lng:-99.1336,t:'M',name:'Metro Salto del Agua',line:'L8',c:'#29b6f6'},
+  {lat:19.4270,lng:-99.1380,t:'M',name:'Metro Balderas',line:'L1',c:'#ff3d3d'},
+  {lat:19.4350,lng:-99.1410,t:'M',name:'Metro Hidalgo',line:'L2',c:'#29b6f6'},
+  {lat:19.4410,lng:-99.1505,t:'M',name:'Metro Revolución',line:'L2',c:'#29b6f6'},
+  {lat:19.4490,lng:-99.1460,t:'M',name:'Metro Buenavista',line:'L B',c:'#ff6b35'},
+  {lat:19.4250,lng:-99.1265,t:'M',name:'Metro Pino Suárez',line:'L1',c:'#ff3d3d'},
+  {lat:19.4180,lng:-99.1040,t:'M',name:'Metro Candelaria',line:'L4',c:'#8bc34a'},
+  {lat:19.4460,lng:-99.1223,t:'C',name:'CETRAM Tepito',line:'BUS',c:'#ff9800'},
+  {lat:19.3960,lng:-99.0600,t:'C',name:'CETRAM Iztapalapa',line:'BUS',c:'#ff9800'},
+  {lat:19.4100,lng:-99.1500,t:'C',name:'CETRAM Doctores',line:'BUS',c:'#ff9800'},
+  {lat:19.4600,lng:-99.0200,t:'M',name:'Metro Ciudad Azteca',line:'L B',c:'#ff6b35'},
+  {lat:19.3700,lng:-99.1800,t:'M',name:'Metro Universidad',line:'L3',c:'#ffeb3b'},
+];
+
+// Sensors / C5 cameras
+const SENSORS = [];
+const sensorSeeds=[[19.4330,-99.1340],[19.4450,-99.1220],[19.4155,-99.1500],
+  [19.3640,-99.0620],[19.4008,-99.0170],[19.4505,-99.1300],[19.4240,-99.1050],
+  [19.4420,-99.1400],[19.4500,-99.1500],[19.4323,-99.1960],[19.3480,-99.1620],[19.3890,-99.1590],
+  [19.4100,-99.1200],[19.4600,-99.1100],[19.4350,-99.0900],[19.4050,-99.1350],
+  [19.4250,-99.1600],[19.4550,-99.1050],[19.4000,-99.0800],[19.4150,-99.0600]];
+sensorSeeds.forEach((s,i)=>SENSORS.push({
+  lat:s[0]+rngU()*.004, lng:s[1]+rngU()*.004,
+  id:`C5-${(1000+i).toString()}`, status:rngU()>.15?'activo':'falla',
+  type:rngU()>.4?'Cámara':'Sensor IoT'
+}));
+
+// ── Layer build functions ─────────────────────────────────────
+function buildCrimeLayer(){
+  const group=L.layerGroup();
+  leafHeat=L.heatLayer(
+    INC.map(i=>[i.lat,i.lng,i.sev*.22]),
+    {radius:30,blur:22,maxZoom:16,gradient:{0:'#00e676',.35:'#ffab00',.7:'#ff6b35',1:'#ff3d3d'}}
+  );
+  leafHeat.addTo(group);
+  return group;
+}
+
+function buildTrafficLayer(){
+  const group=L.layerGroup();
+  TRAFFIC_CORRIDORS.forEach(c=>{
+    const int=c.intensity;
+    const col=int>.8?'#ff3d3d':int>.6?'#ffab00':'#ffeb3b';
+    const pl=L.polyline(c.pts,{
+      color:col, weight:4+int*4, opacity:.7,
+      dashArray:int>.75?null:'12 4',
     });
+    pl.bindTooltip(`🚦 ${c.name} · Congestionamiento ${int>.8?'ALTO':int>.6?'MEDIO':'BAJO'}`, {sticky:true});
+    pl.addTo(group);
 
-    // Statement blur
-    const statementInner = document.getElementById('statementText');
-    const statementSection = statementInner?.closest('.statement');
-    const statementLines = statementInner ? [...statementInner.querySelectorAll('.line')] : [];
-    let ticking = false;
-    function clamp01(x){ return Math.min(Math.max(x,0),1); }
-    function updateStatement(){
-      if(!statementSection || !statementLines.length) return;
-      const rect = statementSection.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const progress = clamp01((vh - rect.top) / (vh + rect.height));
-      const t = clamp01((progress - 0.25) / 0.75);
-      const n = statementLines.length;
-      statementLines.forEach((line, i) => {
-        const p = clamp01((t - i/n) / (1/n));
-        line.style.opacity = Math.max(0.60, 1 - p * 0.38).toFixed(3);
-        line.style.filter = `blur(${(p * 1.6).toFixed(2)}px)`;
-        line.style.transform = `translateY(${(p * 7).toFixed(1)}px)`;
-      });
-    }
-    function onScroll(){ if(!ticking){ ticking=true; requestAnimationFrame(()=>{ updateStatement(); ticking=false; }); } }
-    window.addEventListener('scroll', onScroll, { passive:true });
-    window.addEventListener('resize', ()=>{ syncHeaderH(); updateStatement(); });
-    updateStatement();
-
-    // Reveal
-    const fadeObs = new IntersectionObserver(entries => {
-      entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); fadeObs.unobserve(e.target); } });
-    }, { threshold:0.12 });
-    document.querySelectorAll('.block-inner').forEach(el => fadeObs.observe(el));
-
-    // Toast
-    const toast = document.getElementById('toast');
-    let toastTimer;
-    function showToast(msg){ toast.textContent=msg; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>toast.classList.remove('show'),2600); }
-
-    document.getElementById('btnShare')?.addEventListener('click', async () => {
-      try{
-        if(navigator.share) await navigator.share({ title:document.title, url:location.href });
-        else { await navigator.clipboard.writeText(location.href); showToast('Enlace copiado al portapapeles'); }
-      }catch(e){}
+    // Animated arrow markers along corridor midpoint
+    const mid=Math.floor(c.pts.length/2);
+    const icon=L.divIcon({
+      html:`<div style="font-size:12px;color:${col};text-shadow:0 0 6px ${col};opacity:.8">▶</div>`,
+      className:'urban-marker', iconSize:[16,16], iconAnchor:[8,8]
     });
+    L.marker(c.pts[mid],{icon}).addTo(group);
+  });
+  return group;
+}
 
-    document.getElementById('btnPdf')?.addEventListener('click', () => {
-      const url = document.getElementById('btnPdf').getAttribute('data-pdf-url')||'';
-      if(url.trim()) window.open(url,'_blank','noopener,noreferrer');
-      else showToast('PDF no disponible. Configura data-pdf-url.');
+function buildLightingLayer(){
+  const group=L.layerGroup();
+  LIGHTING_ZONES.forEach(z=>{
+    const isHigh=z.deficit==='alto';
+    const col=isHigh?'#ffeb3b':'rgba(255,235,59,.5)';
+    const circle=L.circle([z.lat,z.lng],{
+      radius:z.radius, color:'#ffeb3b',
+      fillColor:'#ffeb3b', fillOpacity:isHigh?.18:.08,
+      weight:1, opacity:.5, dashArray:'4 3'
     });
+    circle.bindTooltip(`💡 Déficit lumínico ${z.deficit.toUpperCase()} · ${z.zone}`,{sticky:true});
+    circle.addTo(group);
 
-    document.getElementById('btnIndice')?.addEventListener('click', () => window.scrollTo({ top:0, behavior:'smooth' }));
+    // Small center dot
+    const dot=L.circleMarker([z.lat,z.lng],{
+      radius:3, color:'#ffeb3b', fillColor:'#ffeb3b',
+      fillOpacity:.7, weight:0
+    }).addTo(group);
+  });
+  return group;
+}
 
-    function bindButtonLike(el, fn){
-      if(!el) return;
-      el.addEventListener('click', fn);
-      el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fn(); } });
+function buildSafeSpotsLayer(){
+  const group=L.layerGroup();
+  SAFE_SPOTS.forEach(s=>{
+    const icon=L.divIcon({
+      html:`<div style="width:22px;height:22px;border-radius:50%;
+        background:rgba(0,230,118,.15);border:1.5px solid #00e676;
+        display:flex;align-items:center;justify-content:center;
+        font-size:10px;box-shadow:0 0 8px rgba(0,230,118,.4)">${s.type.split(' ')[0]}</div>`,
+      className:'urban-marker', iconSize:[22,22], iconAnchor:[11,11]
+    });
+    L.marker([s.lat,s.lng],{icon})
+      .bindTooltip(`${s.type}`, {sticky:true})
+      .addTo(group);
+  });
+  return group;
+}
+
+function buildTransportLayer(){
+  const group=L.layerGroup();
+  TRANSPORT_NODES.forEach(n=>{
+    const isMetro=n.t==='M';
+    const icon=L.divIcon({
+      html:`<div style="width:${isMetro?20:18}px;height:${isMetro?20:18}px;
+        border-radius:${isMetro?'3px':'50%'};
+        background:${n.c};border:1.5px solid rgba(255,255,255,.4);
+        display:flex;align-items:center;justify-content:center;
+        font-family:'Share Tech Mono',monospace;font-size:7px;font-weight:700;
+        color:rgba(0,0,0,.85);box-shadow:0 0 10px ${n.c}88">${n.line}</div>`,
+      className:'urban-marker',
+      iconSize:[isMetro?20:18,isMetro?20:18],
+      iconAnchor:[isMetro?10:9,isMetro?10:9]
+    });
+    L.marker([n.lat,n.lng],{icon})
+      .bindTooltip(`${isMetro?'🚇':'🚌'} ${n.name} · Línea ${n.line}`,{sticky:true})
+      .addTo(group);
+  });
+  return group;
+}
+
+function buildSensorsLayer(){
+  const group=L.layerGroup();
+  SENSORS.forEach(s=>{
+    const isActive=s.status==='activo';
+    const col=isActive?'#9b6dff':'#ff3d3d';
+
+    // Ping ring (outer)
+    const ring=L.circleMarker([s.lat,s.lng],{
+      radius:10, color:col, fillColor:'transparent',
+      weight:1, opacity:.35, dashArray:'2 2'
+    }).addTo(group);
+
+    // Core dot
+    const dot=L.circleMarker([s.lat,s.lng],{
+      radius:4, color:col, fillColor:col,
+      fillOpacity:.9, weight:0
+    });
+    dot.bindTooltip(`${s.type==='Cámara'?'📷':'📡'} ${s.id} · ${s.status.toUpperCase()} · ${s.type}`,{sticky:true});
+    dot.addTo(group);
+
+    // Status glyph
+    const icon=L.divIcon({
+      html:`<div style="font-size:7px;font-family:var(--mono);color:${col};
+        letter-spacing:.04em;white-space:nowrap;opacity:.8;
+        text-shadow:0 0 6px ${col}">${isActive?'◉':'✕'}</div>`,
+      className:'urban-marker', iconSize:[12,10], iconAnchor:[-4,4]
+    });
+    L.marker([s.lat,s.lng],{icon}).addTo(group);
+  });
+  return group;
+}
+
+// ── Map init ─────────────────────────────────────────────────
+function initLeafMap(){
+  leafMap=L.map('leafmap',{center:[19.4326,-99.1332],zoom:13,zoomControl:false,attributionControl:false});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(leafMap);
+
+  // Build all layers (not all added to map yet)
+  MAP_LAYERS.robbery     = buildCrimeLayer();
+  MAP_LAYERS.traffic     = buildTrafficLayer();
+  MAP_LAYERS.lighting    = buildLightingLayer();
+  MAP_LAYERS.restaurants = buildSafeSpotsLayer();
+  MAP_LAYERS.transport   = buildTransportLayer();
+  MAP_LAYERS.sensors     = buildSensorsLayer();
+
+  // Add layers that are ON by default
+  Object.entries(LAYER_STATE).forEach(([k,v])=>{
+    if(v.on) MAP_LAYERS[k].addTo(leafMap);
+  });
+
+  // Clock
+  setInterval(()=>{
+    const n=new Date();
+    document.getElementById('mapTime').innerHTML=`HORA: <b>${n.getHours().toString().padStart(2,'0')}:${n.getMinutes().toString().padStart(2,'0')}</b>`;
+  },1000);
+
+  // Zone stats sidebar
+  const zs=document.getElementById('zoneStats');
+  const top=[...ZONES].sort((a,b)=>b.inc-a.inc).slice(0,6);
+  const max=top[0].inc;
+  top.forEach(z=>{
+    const pct=Math.round(z.inc/max*100);
+    const col=z.w>3.5?'var(--red)':z.w>2.5?'var(--amber)':'var(--green)';
+    zs.innerHTML+=`<div class="zone-stat"><span class="zs-name">${z.name}</span><div class="zs-bar-wrap"><div class="zs-bar" style="width:${pct}%;background:${col}"></div></div><span class="zs-val">${z.inc}</span></div>`;
+  });
+
+  updateLayerHUD();
+}
+
+// ── Toggle layer ─────────────────────────────────────────────
+function togMapLayer(el){
+  const k=el.dataset.layer;
+  const state=LAYER_STATE[k];
+  state.on=!state.on;
+  el.classList.toggle('on',state.on);
+
+  if(state.on){
+    if(leafMap&&MAP_LAYERS[k])MAP_LAYERS[k].addTo(leafMap);
+  }else{
+    if(leafMap&&MAP_LAYERS[k])MAP_LAYERS[k].remove();
+  }
+
+  updateLayerHUD();
+  updateLayerCount();
+
+  // Show contextual info in sidebar panel
+  const info=document.getElementById('layerInfo');
+  const descriptions={
+    robbery:    'Heatmap de densidad criminal. 500 incidentes CDMX categorizados por tipo y severidad.',
+    traffic:    'Corredores viales con nivel de congestionamiento en tiempo real simulado.',
+    lighting:   'Zonas con déficit de alumbrado público — multiplicador de riesgo nocturno.',
+    restaurants:'Puntos de parada seguros: gasolineras 24h, hospitales y módulos policiales.',
+    transport:  'Red de transporte público: metro, Metrobús, CETRAM y paradas de camión.',
+    sensors:    'Red de sensores C5: cámaras de vigilancia y dispositivos IoT de CDMX.',
+  };
+  info.innerHTML=`<div class="lip-title">${state.label.toUpperCase()} — ${state.on?'<span style="color:var(--green)">ACTIVA</span>':'<span style="color:var(--muted)">INACTIVA</span>'}</div>${descriptions[k]}`;
+  showToast(`${state.label}: ${state.on?'activada ✓':'desactivada'}`);
+}
+
+// ── Update HUD pills ─────────────────────────────────────────
+function updateLayerHUD(){
+  const pills=document.getElementById('hudLayerPills');
+  if(!pills)return;
+  const active=Object.entries(LAYER_STATE).filter(([,v])=>v.on);
+  pills.innerHTML=active.map(([,v])=>
+    `<div class="hlp-swatch" style="background:${v.color};box-shadow:0 0 4px ${v.color}88"></div>`
+  ).join('')+`<span style="color:var(--muted)"> ${active.length}/6</span>`;
+}
+
+// ── Update sidebar layer count ────────────────────────────────
+function updateLayerCount(){
+  const risk=Object.entries(LAYER_STATE).filter(([,v])=>v.on&&v.group==='risk').length;
+  const ctx=Object.entries(LAYER_STATE).filter(([,v])=>v.on&&v.group==='ctx').length;
+  const rn=document.getElementById('riskLayerN');
+  const cn=document.getElementById('ctxLayerN');
+  if(rn)rn.textContent=risk;
+  if(cn)cn.textContent=ctx;
+}
+
+// ─── ROUTE MAP ────────────────────────────────────────────────
+let routeMap, routeHeat, routePolyL=[], routeMarkL=[], routeHotL=[];
+
+function initRouteMap(){
+  routeMap=L.map('routemap',{center:[19.4326,-99.1332],zoom:13,zoomControl:false,attributionControl:false});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(routeMap);
+  routeHeat=L.heatLayer(
+    INC.map(i=>[i.lat,i.lng,i.sev*.22]),
+    {radius:28,blur:20,maxZoom:16,gradient:{0:'#00e676',.35:'#ffab00',.7:'#ff6b35',1:'#ff3d3d'}}
+  ).addTo(routeMap);
+}
+
+// ─── ROUTE GEOMETRY + SCORING ─────────────────────────────────
+function lerp(a,b,n){const p=[];for(let i=0;i<=n;i++){const t=i/n;p.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]);}return p;}
+function buildRoute(o,d,v){
+  const m=[(o[0]+d[0])*.5,(o[1]+d[1])*.5];
+  if(v==='direct')return lerp(o,d,24);
+  if(v==='north'){const via=[m[0]+.020,m[1]-.013];return[...lerp(o,via,12),...lerp(via,d,12).slice(1)];}
+  const via=[m[0]-.016,m[1]+.010];return[...lerp(o,via,12),...lerp(via,d,12).slice(1)];
+}
+function scoreRoute(pts,hour){
+  let total=0,cnt=0;const hot=[];
+  for(const[lat,lng]of pts){
+    let pr=0;
+    for(const inc of INC){
+      const d=Math.hypot(inc.lat-lat,inc.lng-lng)*111000;
+      if(d<200){const hp=(inc.hour>=20||inc.hour<=6)?1.45:1.0;pr+=(inc.sev*hp)/(1+d/70);cnt++;}
     }
-    bindButtonLike(document.getElementById('ctaReunion'), () => { location.hash='#contacto'; });
-    bindButtonLike(document.getElementById('ctaExplorar'), () => { location.hash='#metodo'; });
-  </script>
+    total+=pr;if(pr>2.2)hot.push({lat,lng,w:Math.min(pr/5,1)});
+  }
+  return{score:Math.round(Math.min(100,Math.max(0,(total/pts.length)*13))),density:Math.floor(cnt/pts.length),hotspots:hot};
+}
+
+let routeData=[];
+function runRouteAnalysis(){
+  const o=document.getElementById('rOrig').value.trim().split(',').map(Number);
+  const d=document.getElementById('rDest').value.trim().split(',').map(Number);
+  if(o.length!==2||isNaN(o[0])||d.length!==2||isNaN(d[0])){showToast('⚠ Coordenadas inválidas');return;}
+  const btn=document.getElementById('btnAnalyze');btn.classList.add('busy');
+  setTimeout(()=>{btn.classList.remove('busy');doRouteRender(o,d,document.getElementById('rTime').value);},1400);
+}
+
+function doRouteRender(o,d,dt){
+  clearRoutes(false);
+  const hour=dt?new Date(dt).getHours():new Date().getHours();
+  const isN=hour>=20||hour<=6;
+  const VARS=[
+    {id:'direct',name:'Ruta Directa',via:'Vía Centro Histórico',color:'#ff3d3d',dkm:5.2,dmin:18},
+    {id:'north',name:'Rodeo Norte',via:'Vía Paseo de Reforma',color:'#00e676',dkm:7.1,dmin:24},
+    {id:'south',name:'Rodeo Sur',via:'Vía Eje Central',color:'#ffab00',dkm:6.4,dmin:21},
+  ];
+  routeData=VARS.map(v=>{const pts=buildRoute(o,d,v.id);return{...v,pts,risk:scoreRouteAdaptive(pts,hour)};}).sort((a,b)=>a.risk.score-b.risk.score);
+
+  const mkO=L.circleMarker(o,{radius:9,color:'#00e676',fillColor:'#00e676',fillOpacity:.85,weight:2}).addTo(routeMap).bindPopup('<b>Origen</b>');
+  const mkD=L.circleMarker(d,{radius:9,color:'#ff3d3d',fillColor:'#ff3d3d',fillOpacity:.85,weight:2}).addTo(routeMap).bindPopup('<b>Destino</b>');
+  routeMarkL.push(mkO,mkD);
+
+  routeData.forEach((r,i)=>{
+    const pl=L.polyline(r.pts,{color:r.color,weight:i===0?5:3,opacity:i===0?1:.4,dashArray:i===0?null:'10 6'}).addTo(routeMap);
+    pl.bindTooltip(r.name,{sticky:true});routePolyL.push(pl);
+    if(i===0)r.risk.hotspots.slice(0,8).forEach(h=>{const hl=L.circleMarker([h.lat,h.lng],{radius:5+h.w*7,color:'#ff3d3d',fillColor:'#ff3d3d',fillOpacity:h.w*.45,weight:1,opacity:.6}).addTo(routeMap);routeHotL.push(hl);});
+  });
+
+  routeMap.fitBounds(L.latLngBounds(routeData.flatMap(r=>r.pts)),{padding:[40,50]});
+
+  document.getElementById('routeHUD').style.display='flex';
+  document.getElementById('rhHour').innerHTML=`HORA: <b>${String(hour).padStart(2,'0')}:00 ${isN?'🌙':'☀'}</b>`;
+  document.getElementById('rhBest').innerHTML=`MEJOR: <b style="color:var(--green)">${routeData[0].name.toUpperCase()}</b>`;
+
+  renderRouteCards(isN);
+}
+
+function renderRouteCards(isN){
+  const box=document.getElementById('routeResults');
+  const wrap=document.createElement('div');wrap.className='results-wrap';
+  routeData.forEach((r,i)=>wrap.appendChild(mkRouteCard(r,i,isN)));
+  box.innerHTML='';box.appendChild(wrap);
+  document.getElementById('btnClrR').style.display='block';
+  requestAnimationFrame(()=>wrap.classList.add('in'));
+}
+
+function mkRouteCard(r,idx,isN){
+  const el=document.createElement('div');
+  el.className='rcard'+(idx===0?' sel':'');
+  el.onclick=()=>selRoute(idx);
+  const s=r.risk.score;
+  const col=s<35?'var(--green)':s<65?'var(--amber)':'var(--red)';
+  const lvl=s<35?'BAJO':s<65?'MEDIO':'ALTO';
+  const bgd=s<35?'var(--green-dim)':s<65?'var(--amber-dim)':'var(--red-dim)';
+  const R=21,C=27,circ=2*Math.PI*R,off=circ*(1-s/100);
+  const den=r.risk.density;
+  const chips=[{n:Math.floor(den*.44),l:'robos',c:'var(--red)'},{n:Math.floor(den*.31),l:'asaltos',c:'var(--amber)'},{n:Math.floor(den*.25),l:'hurtos',c:'#ffe600'}].filter(c=>c.n>0);
+  el.innerHTML=`
+    <div class="rc-stripe" style="background:${r.color}"></div>
+    <div class="rc-top">
+      <div class="rc-name-b">
+        <div class="rc-name" style="color:${r.color}">${r.name}${isN?'<span style="color:var(--amber);font-size:8px;font-family:var(--mono)"> +NOC</span>':''}</div>
+        <div class="rc-via">${r.via}</div>
+      </div>
+      <div class="rc-badge" style="background:${idx===0?bgd:'rgba(255,255,255,.03)'};color:${idx===0?col:'var(--muted)'}">
+        ${idx===0?'★ ÓPTIMA':idx===1?'ALT 1':'ALT 2'}
+      </div>
+    </div>
+    <div class="rc-score-row">
+      <div class="rc-ring">
+        <svg width="54" height="54" viewBox="0 0 54 54">
+          <circle cx="${C}" cy="${C}" r="${R}" stroke="rgba(255,255,255,.06)" stroke-width="4" fill="none"/>
+          <circle cx="${C}" cy="${C}" r="${R}" stroke="${col}" stroke-width="4" fill="none"
+            stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}" stroke-linecap="round"/>
+        </svg>
+        <div class="rc-ring-txt">
+          <div class="rc-sn" style="color:${col}">${s}</div>
+          <div class="rc-sl">RISK</div>
+          <div class="score-source-tag">${AI_ENABLED?'RANDOM FOREST':'ALGORITMO BÁSICO'}</div>
+        </div>
+      </div>
+      <div class="rc-stats">
+        <div><div class="rc-stat-k">Distancia</div><div class="rc-stat-v">${r.dkm} km</div></div>
+        <div><div class="rc-stat-k">Tiempo</div><div class="rc-stat-v">${r.dmin} min</div></div>
+        <div><div class="rc-stat-k">Nivel</div><div class="rc-stat-v" style="color:${col}">${lvl}</div></div>
+        <div><div class="rc-stat-k">Inc/100m</div><div class="rc-stat-v">${den}</div></div>
+      </div>
+    </div>
+    <div class="rc-chips">
+      ${chips.map(c=>`<div class="chip"><div class="chip-pip" style="background:${c.c}"></div>${c.n} ${c.l}</div>`).join('')}
+      ${isN?`<div class="chip" style="color:var(--amber);border-color:rgba(255,171,0,.2)">🌙 riesgo nocturno</div>`:''}
+    </div>
+    <div class="rc-actions">
+      <button class="rc-btn pri" onclick="event.stopPropagation();showRouteDetail(${idx})">DETALLE</button>
+      <button class="rc-btn" onclick="event.stopPropagation();selRoute(${idx});showToast('✓ ${r.name} seleccionada')">USAR RUTA</button>
+    </div>`;
+  return el;
+}
+
+function selRoute(idx){
+  document.querySelectorAll('.rcard').forEach((c,i)=>c.classList.toggle('sel',i===idx));
+  routePolyL.forEach((pl,i)=>pl.setStyle({opacity:i===idx?1:.2,weight:i===idx?5:2.5}));
+}
+function showRouteDetail(idx){
+  const r=routeData[idx];const s=r.risk.score;
+  const col=s<35?'var(--green)':s<65?'var(--amber)':'var(--red)';
+  document.getElementById('dpT').textContent=r.name;
+  document.getElementById('dpS').textContent=r.via;
+  const bars=[{l:'Score',v:s,c:col},{l:'Robos',v:Math.floor(s*.44),c:'var(--red)'},{l:'Asaltos',v:Math.floor(s*.31),c:'var(--amber)'},{l:'Hurtos',v:Math.floor(s*.25),c:'#ffe600'},{l:'Nocturno',v:Math.floor(s*.8),c:'var(--amber)'}];
+  const hours=[{h:'00–06',v:Math.floor(s*.75)},{h:'06–12',v:Math.floor(s*.45)},{h:'12–18',v:Math.floor(s*.55)},{h:'18–24',v:Math.floor(s*.85)}];
+  document.getElementById('dpBody').innerHTML=`
+    <div class="dp-sec"><div class="dp-sec-l">COMPOSICIÓN</div>${bars.map(b=>`<div class="bar-item"><div class="bar-hdr"><span class="bar-n">${b.l}</span><span class="bar-v">${b.v}</span></div><div class="bar-track"><div class="bar-fill" style="width:${b.v}%;background:${b.c}"></div></div></div>`).join('')}</div>
+    <div class="dp-sec"><div class="dp-sec-l">HORARIO</div>${hours.map(h=>`<div class="bar-item"><div class="bar-hdr"><span class="bar-n">${h.h}</span><span class="bar-v">${h.v}</span></div><div class="bar-track"><div class="bar-fill" style="width:${h.v}%;background:${col}"></div></div></div>`).join('')}</div>
+    <div class="dp-sec"><div class="dp-sec-l">MÉTRICAS</div><div style="font-family:var(--mono);font-size:9px;color:var(--muted);line-height:2">Dist: <span style="color:var(--text)">${r.dkm}km</span><br>Tiempo: <span style="color:var(--text)">${r.dmin}min</span><br>Hotspots: <span style="color:var(--text)">${r.risk.hotspots.length}</span></div></div>
+    <button class="dp-close" onclick="document.getElementById('detailPanel').classList.remove('open')">✕ CERRAR</button>`;
+  document.getElementById('detailPanel').classList.add('open');
+  selRoute(idx);
+}
+function clearRoutes(full=true){
+  routePolyL.forEach(l=>routeMap&&routeMap.removeLayer(l));routePolyL=[];
+  routeMarkL.forEach(l=>routeMap&&routeMap.removeLayer(l));routeMarkL=[];
+  routeHotL.forEach(l=>routeMap&&routeMap.removeLayer(l));routeHotL=[];
+  if(full){
+    document.getElementById('routeResults').innerHTML='<div class="empty-state"><div class="empty-ico">⟶</div>Ingresa origen y destino.<br>El motor ML calculará 3 rutas<br>con score de riesgo 0–100.</div>';
+    document.getElementById('btnClrR').style.display='none';
+    document.getElementById('routeHUD').style.display='none';
+    document.getElementById('detailPanel').classList.remove('open');
+  }
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────────
+let dashInited=false;
+function renderDash(){
+  if(dashInited)return;dashInited=true;
+
+  // Zone bar chart
+  const sorted=[...ZONES].sort((a,b)=>b.inc-a.inc).slice(0,8);
+  const max=sorted[0].inc;
+  const bc=document.getElementById('zoneBarChart');
+  bc.innerHTML='';
+  sorted.forEach(z=>{
+    const pct=Math.round(z.inc/max*100);
+    const col=z.w>3.5?'#ff3d3d':z.w>2.5?'#ffab00':'#00e676';
+    bc.innerHTML+=`<div class="bc-row"><div class="bc-label">${z.name}</div><div class="bc-track"><div class="bc-fill" style="width:${pct}%;background:${col}"><span class="bc-fill-lbl">${z.inc}</span></div></div><div class="bc-val">${pct}%</div></div>`;
+  });
+
+  // Donut
+  const typeCount={robbery:187,assault:143,theft:121,carjacking:49};
+  const total2=500;
+  const donutColors={robbery:'#ff3d3d',assault:'#ffab00',theft:'#ffe600',carjacking:'#9b6dff'};
+  const donutLabels={robbery:'Robo',assault:'Asalto',theft:'Hurto',carjacking:'Robo Vehicular'};
+  let angle=0;const entries=Object.entries(typeCount);
+  const svg=document.getElementById('donutSvg');let paths='';
+  entries.forEach(([k,v])=>{
+    const pct=v/total2;const sweep=pct*Math.PI*2;
+    const r2=50,cx2=65,cy2=65,ir=30;
+    const x1=cx2+r2*Math.sin(angle),y1=cy2-r2*Math.cos(angle);
+    const x2=cx2+r2*Math.sin(angle+sweep),y2=cy2-r2*Math.cos(angle+sweep);
+    const ix1=cx2+ir*Math.sin(angle),iy1=cy2-ir*Math.cos(angle);
+    const ix2=cx2+ir*Math.sin(angle+sweep),iy2=cy2-ir*Math.cos(angle+sweep);
+    const large=sweep>.0175?1:0;
+    paths+=`<path d="M ${x1} ${y1} A ${r2} ${r2} 0 ${large} 1 ${x2} ${y2} L ${ix2} ${iy2} A ${ir} ${ir} 0 ${large} 0 ${ix1} ${iy1} Z" fill="${donutColors[k]}" opacity=".85"/>`;
+    angle+=sweep;
+  });
+  svg.innerHTML=paths+`<text x="65" y="61" text-anchor="middle" font-family="var(--mono)" font-size="16" fill="white" font-weight="bold">500</text><text x="65" y="74" text-anchor="middle" font-family="var(--mono)" font-size="7" fill="var(--muted)">TOTAL</text>`;
+  const dl=document.getElementById('donutLegend');dl.innerHTML='';
+  entries.forEach(([k,v])=>{
+    const pct=Math.round(v/total2*100);
+    dl.innerHTML+=`<div class="dl-row"><div class="dl-swatch" style="background:${donutColors[k]}"></div><div class="dl-name">${donutLabels[k]}</div><div class="dl-val">${v}</div><div class="dl-pct">${pct}%</div></div>`;
+  });
+
+  // Hourly heatmap — using incident hour distribution
+  const hourCounts=new Array(24).fill(0);
+  INC.forEach(i=>hourCounts[i.hour]++);
+  const maxH=Math.max(...hourCounts);
+  const hg=document.getElementById('hourGrid');
+  const hl=document.getElementById('hourLabels');
+  for(let h=0;h<24;h++){
+    const intensity=hourCounts[h]/maxH;
+    const r2=Math.floor(255*Math.min(intensity*2,1));
+    const g=Math.floor(230*(1-intensity));
+    const col=`rgb(${r2},${g},61)`;
+    hg.innerHTML+=`<div class="hour-cell" style="background:${col};opacity:${.3+intensity*.7}" title="${h}:00 — ${hourCounts[h]} incidentes"></div>`;
+    if(h%6===0||h===23)hl.innerHTML+=`<div class="hlbl">${h}h</div>`;
+    else hl.innerHTML+=`<div class="hlbl"></div>`;
+  }
+
+  // Hotspot table
+  const ht=document.getElementById('hotspotTable');ht.innerHTML='';
+  const ranked=[...ZONES].sort((a,b)=>b.inc-a.inc).slice(0,8);
+  const riskMap={4.3:'CRÍTICO',3.9:'ALTO',3.6:'ALTO',3.5:'ALTO',3.4:'ALTO',3.2:'MEDIO',3.1:'MEDIO',3.0:'MEDIO',1.8:'BAJO',1.5:'BAJO',1.3:'BAJO'};
+  const rcol={CRÍTICO:'var(--red)','CRÍTICO-bg':'var(--red-dim)',ALTO:'#ff6b35','ALTO-bg':'rgba(255,107,53,.12)',MEDIO:'var(--amber)','MEDIO-bg':'var(--amber-dim)',BAJO:'var(--green)','BAJO-bg':'var(--green-dim)'};
+  ranked.forEach((z,i)=>{
+    const rl=z.w>=4?'CRÍTICO':z.w>=3.3?'ALTO':z.w>=2.5?'MEDIO':'BAJO';
+    const rc=rl==='CRÍTICO'?'var(--red)':rl==='ALTO'?'#ff6b35':rl==='MEDIO'?'var(--amber)':'var(--green)';
+    const rbg=rl==='CRÍTICO'?'var(--red-dim)':rl==='ALTO'?'rgba(255,107,53,.12)':rl==='MEDIO'?'var(--amber-dim)':'var(--green-dim)';
+    const dom=z.inc>60?'Robo':z.inc>50?'Asalto':'Hurto';
+    const score=Math.round(z.w/4.3*100);
+    ht.innerHTML+=`<tr><td>${i+1}</td><td>${z.name}</td><td><b style="color:var(--text)">${z.inc}</b></td><td style="color:${TYPE_C[z.inc>60?'robbery':z.inc>50?'assault':'theft']}">${dom}</td><td><span class="risk-pill" style="background:${rbg};color:${rc}">${rl}</span></td><td><b style="color:${rc}">${score}</b></td></tr>`;
+  });
+}
+
+// ─── REPORTS ─────────────────────────────────────────────────
+function togCheck(el){el.classList.toggle('checked');}
+
+function generateReport(){
+  const btn=document.getElementById('btnGen');btn.classList.add('busy');
+  setTimeout(()=>{btn.classList.remove('busy');buildReport();},1800);
+}
+
+function buildReport(){
+  const title=document.getElementById('repTitle').value||'Análisis de Riesgo';
+  const org=document.getElementById('repOrg').value||'N/A';
+  const zone=document.getElementById('repZone').value;
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
+  const checks=document.querySelectorAll('#checkList .check-row.checked .check-t');
+  const sections=[...checks].map(c=>c.textContent.trim());
+
+  document.getElementById('rdDate').textContent=dateStr;
+  document.getElementById('rdOrg').textContent=org;
+  document.getElementById('rdFootOrg').textContent=org.toUpperCase();
+  document.getElementById('rdFootDate').textContent=`GENERADO: ${dateStr}`;
+
+  document.getElementById('rdExec').innerHTML=`
+    <table style="width:100%;border-collapse:collapse;font-size:10px">
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 8px;color:var(--muted)">Título</td><td style="padding:4px 8px">${title}</td></tr>
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 8px;color:var(--muted)">Zona</td><td style="padding:4px 8px">${zone}</td></tr>
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 8px;color:var(--muted)">Incidentes analizados</td><td style="padding:4px 8px;color:var(--red)">500</td></tr>
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 8px;color:var(--muted)">Score promedio CDMX</td><td style="padding:4px 8px;color:var(--amber)">42 / 100</td></tr>
+      <tr><td style="padding:4px 8px;color:var(--muted)">Zonas críticas</td><td style="padding:4px 8px;color:var(--red)">Tepito · Iztapalapa · Neza</td></tr>
+    </table>`;
+
+  if(sections.includes('Mapa de riesgo con heatmap'))document.getElementById('rdMapSection').style.display='block';
+  else document.getElementById('rdMapSection').style.display='none';
+
+  if(sections.includes('Análisis de 3 rutas')){
+    document.getElementById('rdRouteSection').style.display='block';
+    const routes=[
+      {name:'RODEO NORTE',via:'Reforma',score:28,km:7.1,min:24,col:'var(--green)'},
+      {name:'RODEO SUR',via:'Eje Central',score:51,km:6.4,min:21,col:'var(--amber)'},
+      {name:'DIRECTA',via:'Centro Histórico',score:78,km:5.2,min:18,col:'var(--red)'},
+    ];
+    document.getElementById('rdRoutes').innerHTML=routes.map(r=>`
+      <div class="rdoc-route-box">
+        <div class="rdoc-r-name" style="color:${r.col}">${r.name}</div>
+        <div class="rdoc-r-stats">Score: <b style="color:${r.col}">${r.score}</b> · ${r.km}km · ${r.min}min</div>
+      </div>`).join('');
+  }else document.getElementById('rdRouteSection').style.display='none';
+
+  if(sections.includes('Score de riesgo ML')||sections.includes('Distribución de incidentes')){
+    document.getElementById('rdIndicSection').style.display='block';
+    document.getElementById('rdIndicators').innerHTML=`
+      <div class="rdoc-indicator"><span class="rdi-name">Score ML promedio</span><span class="rdi-val" style="color:var(--amber)">42/100 — MEDIO</span></div>
+      <div class="rdoc-indicator"><span class="rdi-name">Robos (más frecuente)</span><span class="rdi-val" style="color:var(--red)">187 incidentes (37.4%)</span></div>
+      <div class="rdoc-indicator"><span class="rdi-name">Hora más peligrosa</span><span class="rdi-val" style="color:var(--amber)">20:00–24:00h</span></div>
+      <div class="rdoc-indicator"><span class="rdi-name">Zona más crítica</span><span class="rdi-val" style="color:var(--red)">Tepito (score 100)</span></div>`;
+  }else document.getElementById('rdIndicSection').style.display='none';
+
+  document.getElementById('rdFooter').style.display='flex';
+  showToast('✓ Reporte generado. En producción: jsPDF.');
+}
+
+// ─── AI MODE ENGINE ───────────────────────────────────────────
+let AI_ENABLED = true;  // default: AI is ON
+
+/* Persist preference across sessions */
+function loadAIPref(){
+  const saved = localStorage.getItem('georisk_ai_mode');
+  if(saved === 'off') applyAIMode(false, false);
+}
+
+function openAIModal(){
+  document.getElementById('aiModalOverlay').classList.add('open');
+  syncModalUI();
+}
+function closeAIModal(){
+  document.getElementById('aiModalOverlay').classList.remove('open');
+}
+function closeAIModalOutside(e){
+  if(e.target===document.getElementById('aiModalOverlay')) closeAIModal();
+}
+
+function toggleAIMode(){
+  applyAIMode(!AI_ENABLED, true);
+  syncModalUI();
+}
+
+function applyAIMode(enable, save=true){
+  AI_ENABLED = enable;
+  if(save) localStorage.setItem('georisk_ai_mode', enable ? 'on' : 'off');
+
+  // Body class drives all CSS-gated elements
+  document.body.classList.toggle('ai-disabled', !enable);
+
+  // Nav button
+  const navBtn = document.getElementById('aiNavBtn');
+  if(navBtn){
+    navBtn.classList.toggle('ai-off', !enable);
+    navBtn.querySelector('.ai-btn-label').textContent = enable ? 'IA ACTIVA' : 'IA INACTIVA';
+  }
+
+  // Route analyze button - change label hint
+  const anlbl = document.querySelector('.anlbl');
+  if(anlbl) anlbl.textContent = enable
+    ? '▶ EJECUTAR ANÁLISIS ML'
+    : '▶ CALCULAR RUTA (BÁSICO)';
+
+  // Reports AI note
+  const repNote = document.getElementById('repAiOffNote');
+  if(repNote) repNote.style.display = enable ? 'none' : 'block';
+
+  // Route score sub-label
+  document.querySelectorAll('.score-source-tag').forEach(el=>{
+    el.textContent = enable ? 'RANDOM FOREST' : 'ALGORITMO BÁSICO';
+  });
+
+  // Dashboard KPI sub-label adjustment
+  const kpiSubs = document.querySelectorAll('.kpi-sub');
+  kpiSubs.forEach(el=>{
+    if(!enable) el.style.opacity='.4';
+    else el.style.opacity='';
+  });
+
+  // Feature states in modal list
+  ['feat-route','feat-ml','feat-dash','feat-rep','feat-time'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.textContent = enable ? 'ACTIVO' : 'BÁSICO';
+    el.classList.toggle('on', enable);
+    el.classList.toggle('off', !enable);
+  });
+
+  if(save) showToast(enable
+    ? '⬡ Inteligencia Artificial activada'
+    : '⊘ IA desactivada — modo análisis básico'
+  );
+}
+
+function syncModalUI(){
+  const on = AI_ENABLED;
+
+  // Status block
+  document.getElementById('aiStatusBlock').classList.toggle('active-state', on);
+  document.getElementById('aiStatusIcon').textContent = on ? '🤖' : '⊘';
+  document.getElementById('aiStatusLabel').textContent = on ? 'IA ACTIVA' : 'IA DESACTIVADA';
+  document.getElementById('aiStatusDesc').innerHTML = on
+    ? 'El motor de inteligencia artificial está habilitado.<br>Los scores de riesgo usan el modelo Random Forest + análisis contextual.'
+    : 'La IA está desactivada.<br>El sistema usa un algoritmo determinista básico.<br><span style="color:var(--green)">Ningún dato se envía al exterior.</span>';
+
+  // Big toggle button
+  const bigBtn = document.getElementById('aiBigToggle');
+  const bigLbl = document.getElementById('aiBigToggleLbl');
+  if(on){
+    bigBtn.className = 'ai-big-toggle disable';
+    bigLbl.textContent = '⊘ DESACTIVAR INTELIGENCIA ARTIFICIAL';
+  } else {
+    bigBtn.className = 'ai-big-toggle enable';
+    bigLbl.textContent = '⬡ ACTIVAR INTELIGENCIA ARTIFICIAL';
+  }
+}
+
+/* Wrap the route scorer to respect AI mode */
+function scoreRouteAdaptive(pts, hour){
+  const base = scoreRoute(pts, hour);
+  if(!AI_ENABLED){
+    // Without AI: simplified distance-only formula, no time-of-day multiplier
+    let total=0;
+    for(const[lat,lng] of pts){
+      let pr=0;
+      for(const inc of INC){
+        const d=Math.hypot(inc.lat-lat,inc.lng-lng)*111000;
+        if(d<150) pr += inc.sev / (1+d/80);
+      }
+      total+=pr;
+    }
+    const raw=(total/pts.length)*10;
+    return {
+      score: Math.round(Math.min(100,Math.max(0,raw))),
+      density: base.density,
+      hotspots: base.hotspots,
+      mode:'basic'
+    };
+  }
+  return {...base, mode:'ml'};
+}
+let tTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(tTimer);tTimer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────
+const now=new Date();now.setMinutes(0,0,0);
+document.getElementById('rTime').value=now.toISOString().slice(0,16);
+const today=new Date().toISOString().slice(0,10);
+document.getElementById('repDate').value=today;
+document.getElementById('rdDate').textContent=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
+document.getElementById('rdOrg').textContent=document.getElementById('repOrg').value;
+
+// Restore AI preference from localStorage (survives page refresh)
+loadAIPref();
+
+// Animate hero coords
+setInterval(()=>{
+  const lat=(19.4326+((Math.random()-.5)*.001)).toFixed(4);
+  const lng=(99.1332+((Math.random()-.5)*.001)).toFixed(4);
+  const el=document.getElementById('heroCoords');
+  if(el)el.textContent=`${lat}°N ${lng}°W`;
+},3000);
+</script>
 </body>
 </html>
